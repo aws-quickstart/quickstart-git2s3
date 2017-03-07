@@ -1,27 +1,21 @@
 global:
   marketplace-ami: false
-  owner: quickstart-eng@amazon.com
+  owner: jmmccon@amazon.com
   qsname: quickstart-git2s3
   regions:
-    - ap-northeast-1
-    - ap-northeast-2
-    - ap-south-1
-    - ap-southeast-1
-    - ap-southeast-2
-    - ca-central-1
-    - eu-central-1
-    - eu-west-1
-    - sa-east-1
     - us-east-1
     - us-east-2
-    - us-west-1
     - us-west-2
+    - ap-northeast-1
+    - ap-northeast-2
+    - ap-southeast-1
+    - ap-southeast-2
+    - eu-central-1
+    - eu-west-1
+    - eu-west-2
   reporting: true
  
 tests:
-  quickstart-git2s3t1:
-    parameter_input: quickstart-git2s3-example-params1.json
-    template_file: quickstart-git2s3-example1.template
-  quickstart-git2s3t2:
-    parameter_input: quickstart-git2s3-example-params2.json
-    template_file: quickstart-git2s3-example2.template
+  defaults:
+    parameter_input: quickstart-git2s3-defaults.json
+    template_file: quickstart-git2s3.template
