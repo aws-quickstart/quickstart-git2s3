@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "Gti Webhooks to clone repository contents to S3. For integrating 3rd party git products with AWS Services like CodePipeline/CodeBuild ",
+    "Description": "Git Webhooks to clone repository contents to S3. For integrating 3rd party git products with AWS Services like CodePipeline/CodeBuild (qs-1nfhrd9bh)",
     "Metadata": {
         "AWS::CloudFormation::Interface": {
             "ParameterGroups": [
