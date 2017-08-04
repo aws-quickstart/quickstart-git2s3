@@ -5,8 +5,7 @@ global:
   regions:
     - us-east-1
   reporting: true
- 
 tests:
   defaults:
-    parameter_input: quickstart-git2s3-defaults.json
-    template_file: quickstart-git2s3.template
+    parameter_input: defaults.json
+    template_file: git2s3.template
