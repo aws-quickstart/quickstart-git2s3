@@ -123,10 +123,10 @@
             "Type": "String"
         },
         "QSS3KeyPrefix": {
-            "AllowedPattern": "^[0-9a-zA-Z-\\.]+(/[0-9a-zA-Z-\\.]+)*$",
-            "ConstraintDescription": "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/). It cannot start or end with forward slash (/) because they are automatically appended.",
-            "Default": "git2s3/latest",
-            "Description": "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/). It cannot start or end with forward slash (/) because they are automatically appended.",
+            "AllowedPattern": "^[0-9a-zA-Z-/]*$",
+            "ConstraintDescription": "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).",
+            "Default": "git2s3/latest/",
+            "Description": "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).",
             "Type": "String"
         }
     },
@@ -454,7 +454,7 @@
                         "Ref": "QSS3BucketName"
                     },
                     "S3Key": {
-                        "Fn::Sub": "${QSS3KeyPrefix}/lambdas/CreateSSHKey.zip"
+                        "Fn::Sub": "${QSS3KeyPrefix}lambdas/CreateSSHKey.zip"
                     }
                 }
             }
@@ -591,7 +591,7 @@
                         "Ref": "QSS3BucketName"
                     },
                     "S3Key": {
-                        "Fn::Sub": "${QSS3KeyPrefix}/lambdas/DeleteBucketContents.zip"
+                        "Fn::Sub": "${QSS3KeyPrefix}lambdas/DeleteBucketContents.zip"
                     }
                 }
             }
@@ -735,7 +735,7 @@
                         "Ref": "QSS3BucketName"
                     },
                     "S3Key": {
-                        "Fn::Sub": "${QSS3KeyPrefix}/lambdas/GitPullS3.zip"
+                        "Fn::Sub": "${QSS3KeyPrefix}lambdas/GitPullS3.zip"
                     }
                 }
             }
@@ -827,7 +827,7 @@
                         "Ref": "QSS3BucketName"
                     },
                     "S3Key": {
-                        "Fn::Sub": "${QSS3KeyPrefix}/lambdas/ZipDl.zip"
+                        "Fn::Sub": "${QSS3KeyPrefix}lambdas/ZipDl.zip"
                     }
                 },
                 "Runtime": "python2.7",
