@@ -246,7 +246,7 @@
         "KMSKey": {
             "Type": "AWS::KMS::Key",
             "Properties": {
-                "Description": "git CodePipeline integration, bucket to store ssh keys",
+                "Description": "git CodePipeline integration, used to encrypt/decrypt ssh keys stored in S3",
                 "KeyPolicy": {
                     "Version": "2012-10-17",
                     "Statement": [
@@ -416,7 +416,12 @@
                                         "kms:Encrypt"
                                     ],
                                     "Resource": [
-                                        "*"
+                                        {
+                                            "Fn::GetAtt": [
+                                                "KMSKey",
+                                                "Arn"
+                                            ]
+                                        }
                                     ]
                                 },
                                 {
@@ -646,7 +651,12 @@
                                         "kms:Decrypt"
                                     ],
                                     "Resource": [
-                                        "*"
+                                        {
+                                            "Fn::GetAtt": [
+                                                "KMSKey",
+                                                "Arn"
+                                            ]
+                                        }
                                     ]
                                 },
                                 {
