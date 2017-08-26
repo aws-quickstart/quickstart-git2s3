@@ -763,15 +763,23 @@
                                             ]
                                         },
                                         {
-                                            "Fn::Join": [
-                                                "",
-                                                [
-                                                    "arn:aws:s3:::",
-                                                    {
-                                                        "Ref": "LambdaZipsBucket"
-                                                    },
-                                                    "/*"
-                                                ]
+                                            "Fn::If": [
+                                                "NotUsEast1",
+                                                {
+                                                    "Fn::Join": [
+                                                        "",
+                                                        [
+                                                            "arn:aws:s3:::",
+                                                            {
+                                                                "Ref": "LambdaZipsBucket"
+                                                            },
+                                                            "/*"
+                                                        ]
+                                                    ]
+                                                },
+                                                {
+                                                    "Ref": "AWS::NoValue"
+                                                }
                                             ]
                                         },
                                         {
@@ -797,14 +805,22 @@
                                             ]
                                         },
                                         {
-                                            "Fn::Join": [
-                                                "",
-                                                [
-                                                    "arn:aws:s3:::",
-                                                    {
-                                                        "Ref": "LambdaZipsBucket"
-                                                    }
-                                                ]
+                                            "Fn::If": [
+                                                "NotUsEast1",
+                                                {
+                                                    "Fn::Join": [
+                                                        "",
+                                                        [
+                                                            "arn:aws:s3:::",
+                                                            {
+                                                                "Ref": "LambdaZipsBucket"
+                                                            }
+                                                        ]
+                                                    ]
+                                                },
+                                                {
+                                                    "Ref": "AWS::NoValue"
+                                                }
                                             ]
                                         }
                                     ]
