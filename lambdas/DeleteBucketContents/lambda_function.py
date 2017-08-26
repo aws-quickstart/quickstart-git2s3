@@ -19,6 +19,15 @@ def lambda_handler(event,context):
             if 'Contents' in s3objects.keys():
                 print 'Deleting KeyBucket objects %s...' % str([{'Key':key['Key']} for key in s3objects['Contents']])
                 s3.delete_objects(Bucket=event["ResourceProperties"]["KeyBucket"],Delete={'Objects':[{'Key':key['Key']} for key in s3objects['Contents']]})
+            # Delete ZipBucket contents
+            if event["ResourceProperties"]["ZipBucket"] != "":
+                print 'Getting ZipBucket objects...'
+                s3objects = s3.list_objects_v2(Bucket=event["ResourceProperties"]["ZipBucket"])
+                if 'Contents' in s3objects.keys():
+                    print 'Deleting ZipBucket objects %s...' % str(
+                        [{'Key': key['Key']} for key in s3objects['Contents']])
+                    s3.delete_objects(Bucket=event["ResourceProperties"]["ZipBucket"],
+                                      Delete={'Objects': [{'Key': key['Key']} for key in s3objects['Contents']]})
             # Delete Output bucket contents and versions
             print 'Getting OutputBucket objects...'
             objects=[]

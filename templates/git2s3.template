@@ -214,9 +214,213 @@
                     ]
                 }
             ]
+        },
+        "NotUsEast1": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "AWS::Region"
+                        },
+                        "us-east-1"
+                    ]
+                }
+            ]
         }
     },
     "Resources": {
+        "LambdaZipsBucket": {
+            "Condition": "NotUsEast1",
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "Tags": []
+            }
+        },
+        "CopyZips": {
+            "Condition": "NotUsEast1",
+            "Type": "AWS::CloudFormation::CustomResource",
+            "Properties": {
+                "ServiceToken": {
+                    "Fn::GetAtt": [
+                        "CopyZipsFunction",
+                        "Arn"
+                    ]
+                },
+                "DestRegion": {
+                    "Ref": "AWS::Region"
+                },
+                "SourceRegion": "us-east-1",
+                "Bucket": {
+                    "Ref": "LambdaZipsBucket"
+                },
+                "TemplateBucket": {
+                    "Ref": "QSS3BucketName"
+                },
+                "TemplatePrefix": {
+                    "Ref": "QSS3KeyPrefix"
+                },
+                "Objects": [
+                    "lambdas/CreateSSHKey.zip",
+                    "lambdas/DeleteBucketContents.zip",
+                    "lambdas/GitPullS3.zip",
+                    "lambdas/ZipDl.zip"
+                ]
+            }
+        },
+        "CopyZipsRole": {
+            "Condition": "NotUsEast1",
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "lambda.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "Path": "/",
+                "Policies": [
+                    {
+                        "PolicyName": "git2cp-sshkeygen",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "s3:GetObject"
+                                    ],
+                                    "Resource": [
+                                        {
+                                            "Fn::Join": [
+                                                "",
+                                                [
+                                                    "arn:aws:s3:::",
+                                                    {
+                                                        "Ref": "QSS3BucketName"
+                                                    },
+                                                    "/*"
+                                                ]
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "s3:PutObject"
+                                    ],
+                                    "Resource": [
+                                        {
+                                            "Fn::Join": [
+                                                "",
+                                                [
+                                                    "arn:aws:s3:::",
+                                                    {
+                                                        "Ref": "LambdaZipsBucket"
+                                                    },
+                                                    "/*"
+                                                ]
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "logs:CreateLogGroup",
+                                        "logs:CreateLogStream",
+                                        "logs:PutLogEvents"
+                                    ],
+                                    "Resource": [
+                                        "arn:aws:logs:*:*:*"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "CopyZipsFunction": {
+            "Condition": "NotUsEast1",
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Description": "Copies objects from a source S3 bucket to a destination",
+                "Handler": "index.handler",
+                "Runtime": "python2.7",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "CopyZipsRole",
+                        "Arn"
+                    ]
+                },
+                "Timeout": 240,
+                "Code": {
+                    "ZipFile": {
+                        "Fn::Join": [
+                            "\n",
+                            [
+                                "import json",
+                                "import boto3",
+                                "import cfnresponse",
+                                "def create(properties, physical_id):",
+                                "  source_region = properties['SourceRegion']",
+                                "  dest_region = properties['DestRegion']",
+                                "  dest_bucket = properties['Bucket']",
+                                "  objects = properties['Objects']",
+                                "  source_bucket = properties['TemplateBucket']",
+                                "  source_prefix = properties['TemplatePrefix']",
+                                "  s3 = boto3.client('s3', dest_region)",
+                                "  source_client = boto3.client('s3', source_region)",
+                                "",
+                                "  for object in objects:",
+                                "    key = source_prefix + object",
+                                "    copy_source = {",
+                                "      'Bucket': source_bucket,",
+                                "      'Key': key",
+                                "    }",
+                                "    s3.copy(copy_source, dest_bucket, key, SourceClient=source_client)",
+                                "  return cfnresponse.SUCCESS, None",
+                                "",
+                                "def update(properties, physical_id):",
+                                "  return create(properties, physical_id)",
+                                "",
+                                "def delete(properties, physical_id):",
+                                "  return cfnresponse.SUCCESS, None",
+                                "",
+                                "def handler(event, context):",
+                                "  print \"Received event: %s\" % json.dumps(event)",
+                                "",
+                                "  status = cfnresponse.FAILED",
+                                "  new_physical_id = None",
+                                "",
+                                "  try:",
+                                "    properties = event.get('ResourceProperties')",
+                                "    physical_id = event.get('PhysicalResourceId')",
+                                "",
+                                "    status, new_physical_id = {",
+                                "      'Create': create,",
+                                "      'Update': update,",
+                                "      'Delete': delete",
+                                "    }.get(event['RequestType'], lambda x, y: (cfnresponse.FAILED, None))(properties, physical_id)",
+                                "  except Exception as e:",
+                                "    print \"Exception: %s\" % e",
+                                "    status = cfnresponse.FAILED",
+                                "  finally:",
+                                "    cfnresponse.send(event, context, status, {}, new_physical_id)",
+                                ""
+                            ]
+                        ]
+                    }
+                }
+            }
+        },
         "KeyBucket": {
             "Type": "AWS::S3::Bucket",
             "Properties": {
@@ -443,6 +647,19 @@
         },
         "CreateSSHKeyLambda": {
             "Type": "AWS::Lambda::Function",
+            "Metadata": {
+                "PseudoDependsOn": {
+                    "Fn::If": [
+                        "NotUsEast1",
+                        {
+                            "Ref": "CopyZips"
+                        },
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
+                    ]
+                }
+            },
             "Properties": {
                 "Handler": "lambda_function.lambda_handler",
                 "MemorySize": "128",
@@ -456,7 +673,15 @@
                 "Timeout": "300",
                 "Code": {
                     "S3Bucket": {
-                        "Ref": "QSS3BucketName"
+                        "Fn::If": [
+                            "NotUsEast1",
+                            {
+                                "Ref": "LambdaZipsBucket"
+                            },
+                            {
+                                "Ref": "QSS3BucketName"
+                            }
+                        ]
                     },
                     "S3Key": {
                         "Fn::Sub": "${QSS3KeyPrefix}lambdas/CreateSSHKey.zip"
@@ -580,6 +805,19 @@
         },
         "DeleteBucketContentsLambda": {
             "Type": "AWS::Lambda::Function",
+            "Metadata": {
+                "PseudoDependsOn": {
+                    "Fn::If": [
+                        "NotUsEast1",
+                        {
+                            "Ref": "CopyZips"
+                        },
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
+                    ]
+                }
+            },
             "Properties": {
                 "Handler": "lambda_function.lambda_handler",
                 "MemorySize": "128",
@@ -593,7 +831,15 @@
                 "Timeout": "300",
                 "Code": {
                     "S3Bucket": {
-                        "Ref": "QSS3BucketName"
+                        "Fn::If": [
+                            "NotUsEast1",
+                            {
+                                "Ref": "LambdaZipsBucket"
+                            },
+                            {
+                                "Ref": "QSS3BucketName"
+                            }
+                        ]
                     },
                     "S3Key": {
                         "Fn::Sub": "${QSS3KeyPrefix}lambdas/DeleteBucketContents.zip"
@@ -608,6 +854,19 @@
                 "KeyBucket",
                 "OutputBucket"
             ],
+            "Metadata": {
+                "PseudoDependsOn": {
+                    "Fn::If": [
+                        "NotUsEast1",
+                        {
+                            "Ref": "CopyZips"
+                        },
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
+                    ]
+                }
+            },
             "Properties": {
                 "ServiceToken": {
                     "Fn::GetAtt": [
@@ -620,6 +879,15 @@
                 },
                 "OutputBucket": {
                     "Ref": "OutputBucket"
+                },
+                "ZipBucket": {
+                    "Fn::If": [
+                        "NotUsEast1",
+                        {
+                            "Ref": "LambdaZipsBucket"
+                        },
+                        ""
+                    ]
                 }
             }
         },
@@ -729,6 +997,19 @@
         },
         "GitPullLambda": {
             "Type": "AWS::Lambda::Function",
+            "Metadata": {
+                "PseudoDependsOn": {
+                    "Fn::If": [
+                        "NotUsEast1",
+                        {
+                            "Ref": "CopyZips"
+                        },
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
+                    ]
+                }
+            },
             "Properties": {
                 "Handler": "lambda_function.lambda_handler",
                 "MemorySize": "128",
@@ -742,7 +1023,15 @@
                 "Timeout": "300",
                 "Code": {
                     "S3Bucket": {
-                        "Ref": "QSS3BucketName"
+                        "Fn::If": [
+                            "NotUsEast1",
+                            {
+                                "Ref": "LambdaZipsBucket"
+                            },
+                            {
+                                "Ref": "QSS3BucketName"
+                            }
+                        ]
                     },
                     "S3Key": {
                         "Fn::Sub": "${QSS3KeyPrefix}lambdas/GitPullS3.zip"
@@ -824,6 +1113,19 @@
         },
         "ZipDlLambda": {
             "Type": "AWS::Lambda::Function",
+            "Metadata": {
+                "PseudoDependsOn": {
+                    "Fn::If": [
+                        "NotUsEast1",
+                        {
+                            "Ref": "CopyZips"
+                        },
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
+                    ]
+                }
+            },
             "Properties": {
                 "Handler": "lambda_function.lambda_handler",
                 "Role": {
@@ -834,7 +1136,15 @@
                 },
                 "Code": {
                     "S3Bucket": {
-                        "Ref": "QSS3BucketName"
+                        "Fn::If": [
+                            "NotUsEast1",
+                            {
+                                "Ref": "LambdaZipsBucket"
+                            },
+                            {
+                                "Ref": "QSS3BucketName"
+                            }
+                        ]
                     },
                     "S3Key": {
                         "Fn::Sub": "${QSS3KeyPrefix}lambdas/ZipDl.zip"
