@@ -768,6 +768,18 @@
                                                 [
                                                     "arn:aws:s3:::",
                                                     {
+                                                        "Ref": "LambdaZipsBucket"
+                                                    },
+                                                    "/*"
+                                                ]
+                                            ]
+                                        },
+                                        {
+                                            "Fn::Join": [
+                                                "",
+                                                [
+                                                    "arn:aws:s3:::",
+                                                    {
                                                         "Ref": "KeyBucket"
                                                     }
                                                 ]
@@ -780,6 +792,17 @@
                                                     "arn:aws:s3:::",
                                                     {
                                                         "Ref": "OutputBucket"
+                                                    }
+                                                ]
+                                            ]
+                                        },
+                                        {
+                                            "Fn::Join": [
+                                                "",
+                                                [
+                                                    "arn:aws:s3:::",
+                                                    {
+                                                        "Ref": "LambdaZipsBucket"
                                                     }
                                                 ]
                                             ]
