@@ -214,30 +214,16 @@
                     ]
                 }
             ]
-        },
-        "NotUsEast1": {
-            "Fn::Not": [
-                {
-                    "Fn::Equals": [
-                        {
-                            "Ref": "AWS::Region"
-                        },
-                        "us-east-1"
-                    ]
-                }
-            ]
         }
     },
     "Resources": {
         "LambdaZipsBucket": {
-            "Condition": "NotUsEast1",
             "Type": "AWS::S3::Bucket",
             "Properties": {
                 "Tags": []
             }
         },
         "CopyZips": {
-            "Condition": "NotUsEast1",
             "Type": "AWS::CloudFormation::CustomResource",
             "Properties": {
                 "ServiceToken": {
@@ -249,14 +235,13 @@
                 "DestRegion": {
                     "Ref": "AWS::Region"
                 },
-                "SourceRegion": "us-east-1",
-                "Bucket": {
+                "DestBucket": {
                     "Ref": "LambdaZipsBucket"
                 },
-                "TemplateBucket": {
+                "SourceBucket": {
                     "Ref": "QSS3BucketName"
                 },
-                "TemplatePrefix": {
+                "Prefix": {
                     "Ref": "QSS3KeyPrefix"
                 },
                 "Objects": [
@@ -268,7 +253,6 @@
             }
         },
         "CopyZipsRole": {
-            "Condition": "NotUsEast1",
             "Type": "AWS::IAM::Role",
             "Properties": {
                 "AssumeRolePolicyDocument": {
@@ -313,6 +297,25 @@
                                 {
                                     "Effect": "Allow",
                                     "Action": [
+                                        "s3:GetBucketLocation"
+                                    ],
+                                    "Resource": [
+                                        {
+                                            "Fn::Join": [
+                                                "",
+                                                [
+                                                    "arn:aws:s3:::",
+                                                    {
+                                                        "Ref": "QSS3BucketName"
+                                                    }
+                                                ]
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
                                         "s3:PutObject"
                                     ],
                                     "Resource": [
@@ -348,7 +351,6 @@
             }
         },
         "CopyZipsFunction": {
-            "Condition": "NotUsEast1",
             "Type": "AWS::Lambda::Function",
             "Properties": {
                 "Description": "Copies objects from a source S3 bucket to a destination",
@@ -370,13 +372,15 @@
                                 "import boto3",
                                 "import cfnresponse",
                                 "def create(properties, physical_id):",
-                                "  source_region = properties['SourceRegion']",
                                 "  dest_region = properties['DestRegion']",
-                                "  dest_bucket = properties['Bucket']",
+                                "  dest_bucket = properties['DestBucket']",
                                 "  objects = properties['Objects']",
-                                "  source_bucket = properties['TemplateBucket']",
-                                "  source_prefix = properties['TemplatePrefix']",
+                                "  source_bucket = properties['SourceBucket']",
+                                "  source_prefix = properties['Prefix']",
                                 "  s3 = boto3.client('s3', dest_region)",
+                                "",
+                                "  location_constraint = boto3.client('s3').get_bucket_location(Bucket=source_bucket)['LocationConstraint']",
+                                "  source_region = location_constraint if location_constraint else 'us-east-1'",
                                 "  source_client = boto3.client('s3', source_region)",
                                 "",
                                 "  for object in objects:",
@@ -646,20 +650,8 @@
             }
         },
         "CreateSSHKeyLambda": {
+            "DependsOn": "CopyZips",
             "Type": "AWS::Lambda::Function",
-            "Metadata": {
-                "PseudoDependsOn": {
-                    "Fn::If": [
-                        "NotUsEast1",
-                        {
-                            "Ref": "CopyZips"
-                        },
-                        {
-                            "Ref": "AWS::NoValue"
-                        }
-                    ]
-                }
-            },
             "Properties": {
                 "Handler": "lambda_function.lambda_handler",
                 "MemorySize": "128",
@@ -673,15 +665,7 @@
                 "Timeout": "300",
                 "Code": {
                     "S3Bucket": {
-                        "Fn::If": [
-                            "NotUsEast1",
-                            {
                                 "Ref": "LambdaZipsBucket"
-                            },
-                            {
-                                "Ref": "QSS3BucketName"
-                            }
-                        ]
                     },
                     "S3Key": {
                         "Fn::Sub": "${QSS3KeyPrefix}lambdas/CreateSSHKey.zip"
@@ -763,9 +747,6 @@
                                             ]
                                         },
                                         {
-                                            "Fn::If": [
-                                                "NotUsEast1",
-                                                {
                                                     "Fn::Join": [
                                                         "",
                                                         [
@@ -776,11 +757,6 @@
                                                             "/*"
                                                         ]
                                                     ]
-                                                },
-                                                {
-                                                    "Ref": "AWS::NoValue"
-                                                }
-                                            ]
                                         },
                                         {
                                             "Fn::Join": [
@@ -805,9 +781,6 @@
                                             ]
                                         },
                                         {
-                                            "Fn::If": [
-                                                "NotUsEast1",
-                                                {
                                                     "Fn::Join": [
                                                         "",
                                                         [
@@ -817,11 +790,6 @@
                                                             }
                                                         ]
                                                     ]
-                                                },
-                                                {
-                                                    "Ref": "AWS::NoValue"
-                                                }
-                                            ]
                                         }
                                     ]
                                 },
@@ -843,20 +811,8 @@
             }
         },
         "DeleteBucketContentsLambda": {
+            "DependsOn": "CopyZips",
             "Type": "AWS::Lambda::Function",
-            "Metadata": {
-                "PseudoDependsOn": {
-                    "Fn::If": [
-                        "NotUsEast1",
-                        {
-                            "Ref": "CopyZips"
-                        },
-                        {
-                            "Ref": "AWS::NoValue"
-                        }
-                    ]
-                }
-            },
             "Properties": {
                 "Handler": "lambda_function.lambda_handler",
                 "MemorySize": "128",
@@ -870,15 +826,7 @@
                 "Timeout": "300",
                 "Code": {
                     "S3Bucket": {
-                        "Fn::If": [
-                            "NotUsEast1",
-                            {
                                 "Ref": "LambdaZipsBucket"
-                            },
-                            {
-                                "Ref": "QSS3BucketName"
-                            }
-                        ]
                     },
                     "S3Key": {
                         "Fn::Sub": "${QSS3KeyPrefix}lambdas/DeleteBucketContents.zip"
@@ -891,21 +839,9 @@
             "Version": "1.0",
             "DependsOn": [
                 "KeyBucket",
-                "OutputBucket"
+                "OutputBucket",
+                "CopyZips"
             ],
-            "Metadata": {
-                "PseudoDependsOn": {
-                    "Fn::If": [
-                        "NotUsEast1",
-                        {
-                            "Ref": "CopyZips"
-                        },
-                        {
-                            "Ref": "AWS::NoValue"
-                        }
-                    ]
-                }
-            },
             "Properties": {
                 "ServiceToken": {
                     "Fn::GetAtt": [
@@ -920,13 +856,7 @@
                     "Ref": "OutputBucket"
                 },
                 "ZipBucket": {
-                    "Fn::If": [
-                        "NotUsEast1",
-                        {
                             "Ref": "LambdaZipsBucket"
-                        },
-                        ""
-                    ]
                 }
             }
         },
@@ -1035,20 +965,8 @@
             }
         },
         "GitPullLambda": {
+            "DependsOn": "CopyZips",
             "Type": "AWS::Lambda::Function",
-            "Metadata": {
-                "PseudoDependsOn": {
-                    "Fn::If": [
-                        "NotUsEast1",
-                        {
-                            "Ref": "CopyZips"
-                        },
-                        {
-                            "Ref": "AWS::NoValue"
-                        }
-                    ]
-                }
-            },
             "Properties": {
                 "Handler": "lambda_function.lambda_handler",
                 "MemorySize": "128",
@@ -1062,15 +980,7 @@
                 "Timeout": "300",
                 "Code": {
                     "S3Bucket": {
-                        "Fn::If": [
-                            "NotUsEast1",
-                            {
                                 "Ref": "LambdaZipsBucket"
-                            },
-                            {
-                                "Ref": "QSS3BucketName"
-                            }
-                        ]
                     },
                     "S3Key": {
                         "Fn::Sub": "${QSS3KeyPrefix}lambdas/GitPullS3.zip"
@@ -1151,20 +1061,8 @@
             }
         },
         "ZipDlLambda": {
+            "DependsOn": "CopyZips",
             "Type": "AWS::Lambda::Function",
-            "Metadata": {
-                "PseudoDependsOn": {
-                    "Fn::If": [
-                        "NotUsEast1",
-                        {
-                            "Ref": "CopyZips"
-                        },
-                        {
-                            "Ref": "AWS::NoValue"
-                        }
-                    ]
-                }
-            },
             "Properties": {
                 "Handler": "lambda_function.lambda_handler",
                 "Role": {
@@ -1175,15 +1073,7 @@
                 },
                 "Code": {
                     "S3Bucket": {
-                        "Fn::If": [
-                            "NotUsEast1",
-                            {
                                 "Ref": "LambdaZipsBucket"
-                            },
-                            {
-                                "Ref": "QSS3BucketName"
-                            }
-                        ]
                     },
                     "S3Key": {
                         "Fn::Sub": "${QSS3KeyPrefix}lambdas/ZipDl.zip"
