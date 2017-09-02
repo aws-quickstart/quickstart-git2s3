@@ -44,7 +44,7 @@
             ],
             "ParameterLabels": {
                 "AllowedIps": {
-                    "default": "Allowed IP's"
+                    "default": "Allowed IPs"
                 },
                 "ApiSecret": {
                     "default": "API Secret"
