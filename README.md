@@ -2,7 +2,7 @@
 ## Git webhooks with AWS services
 ### Linking your Git repository to Amazon S3 and AWS services for continuous code integration, testing, and deployment 
 
-This Quick Start deploys HTTPS endpoints and AWS Lambda functions for implementing webhooks, to enable event-driven integration between Git services and Amazon Web Services (AWS) services on the AWS Cloud.
+This Quick Start deploys HTTPS endpoints and AWS Lambda functions for implementing webhooks, to enable event-driven integration between Git services and Amazon Web Services (AWS) on the AWS Cloud.
 
 After you deploy the Quick Start, you can set up a webhook that uses the endpoints to create a bridge between your on-premises Git repository and AWS services like AWS CodePipeline and AWS CodeBuild. With this setup, builds and pipeline executions occur automatically when you commit your code to a Git repository, and your code can be continuously integrated, tested, built, and deployed on AWS with each change. 
 
