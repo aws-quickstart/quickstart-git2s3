@@ -130,6 +130,13 @@
             "Type": "String"
         }
     },
+    "Mappings": {
+        "Lambda": {
+            "Source": {
+                "Region": "us-east-2"
+            }
+        }
+    },
     "Conditions": {
         "UseAllowedIps": {
             "Fn::Not": [
@@ -241,6 +248,13 @@
                 "SourceBucket": {
                     "Ref": "QSS3BucketName"
                 },
+                "SourceRegion": {
+                    "Fn::FindInMap": [
+                        "Lambda",
+                        "Source",
+                        "Region"
+                    ]
+                },
                 "Prefix": {
                     "Ref": "QSS3KeyPrefix"
                 },
@@ -289,25 +303,6 @@
                                                         "Ref": "QSS3BucketName"
                                                     },
                                                     "/*"
-                                                ]
-                                            ]
-                                        }
-                                    ]
-                                },
-                                {
-                                    "Effect": "Allow",
-                                    "Action": [
-                                        "s3:GetBucketLocation"
-                                    ],
-                                    "Resource": [
-                                        {
-                                            "Fn::Join": [
-                                                "",
-                                                [
-                                                    "arn:aws:s3:::",
-                                                    {
-                                                        "Ref": "QSS3BucketName"
-                                                    }
                                                 ]
                                             ]
                                         }
@@ -377,10 +372,9 @@
                                 "  objects = properties['Objects']",
                                 "  source_bucket = properties['SourceBucket']",
                                 "  source_prefix = properties['Prefix']",
+                                "  source_region = properties['SourceRegion']",
                                 "  s3 = boto3.client('s3', dest_region)",
                                 "",
-                                "  location_constraint = boto3.client('s3').get_bucket_location(Bucket=source_bucket)['LocationConstraint']",
-                                "  source_region = location_constraint if location_constraint else 'us-east-1'",
                                 "  source_client = boto3.client('s3', source_region)",
                                 "",
                                 "  for object in objects:",
