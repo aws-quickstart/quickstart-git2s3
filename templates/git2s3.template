@@ -370,6 +370,7 @@
                             [
                                 "import json",
                                 "import boto3",
+                                "import botocore",
                                 "import cfnresponse",
                                 "def create(properties, physical_id):",
                                 "  dest_region = properties['DestRegion']",
