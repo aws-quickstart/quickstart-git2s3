@@ -368,32 +368,11 @@
                             [
                                 "import json",
                                 "import logging",
-                                "import os",
                                 "import threading",
-                                "import time",
                                 "",
                                 "import boto3",
-                                "from botocore.vendored import requests",
                                 "",
                                 "import cfnresponse",
-                                "",
-                                "",
-                                "def get_region(bucket):",
-                                "    source_region = None",
-                                "    retries = 10",
-                                "    while not source_region:",
-                                "        response = requests.get('http://s3.amazonaws.com/%s' % bucket)",
-                                "        if 'x-amz-bucket-region' not in response.headers.keys():",
-                                "            retries -= 1",
-                                "            if retries == 0:",
-                                "                raise Exception('Failed to get source bucket region from s3 headers: %s %s HEADERS: %s' % (",
-                                "                    response.status_code,",
-                                "                    response.reason,",
-                                "                    str(response.headers)",
-                                "                ))",
-                                "            time.sleep(5)",
-                                "        else:",
-                                "            return response.headers['x-amz-bucket-region']",
                                 "",
                                 "",
                                 "def copy_objects(source_bucket, dest_bucket, prefix, objects):",
@@ -423,28 +402,21 @@
                                 "    threading.Timer((context.get_remaining_time_in_millis() / 1000.00) - 0.5, timeout, args=[event, context]).start()",
                                 "",
                                 "    print('Received event: %s' % json.dumps(event))",
-                                "    output_bucket = None",
                                 "    status = cfnresponse.SUCCESS",
                                 "    try:",
                                 "        source_bucket = event['ResourceProperties']['SourceBucket']",
                                 "        dest_bucket = event['ResourceProperties']['DestBucket']",
                                 "        prefix = event['ResourceProperties']['Prefix']",
                                 "        objects = event['ResourceProperties']['Objects']",
-                                "        dest_region = os.environ['AWS_DEFAULT_REGION']",
-                                "        source_region = get_region(source_bucket)",
-                                "        if source_region != dest_region:",
-                                "            output_bucket = dest_bucket",
-                                "            if event['RequestType'] == 'Delete':",
-                                "                delete_objects(dest_bucket, prefix, objects)",
-                                "            else:",
-                                "                copy_objects(source_bucket, dest_bucket, prefix, objects)",
+                                "        if event['RequestType'] == 'Delete':",
+                                "            delete_objects(dest_bucket, prefix, objects)",
                                 "        else:",
-                                "            output_bucket = source_bucket",
+                                "            copy_objects(source_bucket, dest_bucket, prefix, objects)",
                                 "    except Exception as e:",
                                 "        logging.error('Exception: %s' % e, exc_info=True)",
                                 "        status = cfnresponse.FAILED",
                                 "    finally:",
-                                "        cfnresponse.send(event, context, status, {'Bucket': output_bucket}, None)",
+                                "        cfnresponse.send(event, context, status, {}, None)",
                                 ""
                             ]
                         ]
@@ -692,10 +664,7 @@
                 "Timeout": "300",
                 "Code": {
                     "S3Bucket": {
-                                "Fn::GetAtt": [
-                                    "CopyZips",
-                                    "Bucket"
-                                ]
+                        "Ref": "LambdaZipsBucket"
                     },
                     "S3Key": {
                         "Fn::Sub": "${QSS3KeyPrefix}lambdas/CreateSSHKey.zip"
@@ -833,10 +802,7 @@
                 "Timeout": "300",
                 "Code": {
                     "S3Bucket": {
-                                "Fn::GetAtt": [
-                                    "CopyZips",
-                                    "Bucket"
-                                ]
+                        "Ref": "LambdaZipsBucket"
                     },
                     "S3Key": {
                         "Fn::Sub": "${QSS3KeyPrefix}lambdas/DeleteBucketContents.zip"
@@ -986,10 +952,7 @@
                 "Timeout": "300",
                 "Code": {
                     "S3Bucket": {
-                                "Fn::GetAtt": [
-                                    "CopyZips",
-                                    "Bucket"
-                                ]
+                        "Ref": "LambdaZipsBucket"
                     },
                     "S3Key": {
                         "Fn::Sub": "${QSS3KeyPrefix}lambdas/GitPullS3.zip"
@@ -1082,10 +1045,7 @@
                 },
                 "Code": {
                     "S3Bucket": {
-                                "Fn::GetAtt": [
-                                    "CopyZips",
-                                    "Bucket"
-                                ]
+                        "Ref": "LambdaZipsBucket"
                     },
                     "S3Key": {
                         "Fn::Sub": "${QSS3KeyPrefix}lambdas/ZipDl.zip"
