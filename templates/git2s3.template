@@ -232,9 +232,6 @@
                         "Arn"
                     ]
                 },
-                "DestRegion": {
-                    "Ref": "AWS::Region"
-                },
                 "DestBucket": {
                     "Ref": "LambdaZipsBucket"
                 },
@@ -316,7 +313,8 @@
                                 {
                                     "Effect": "Allow",
                                     "Action": [
-                                        "s3:PutObject"
+                                        "s3:PutObject",
+                                        "s3:DeleteObject"
                                     ],
                                     "Resource": [
                                         {
@@ -369,67 +367,84 @@
                             "\n",
                             [
                                 "import json",
+                                "import logging",
+                                "import os",
+                                "import threading",
+                                "import time",
+                                "",
                                 "import boto3",
-                                "import botocore",
+                                "from botocore.vendored import requests",
+                                "",
                                 "import cfnresponse",
-                                "def create(properties, physical_id):",
-                                "  dest_region = properties['DestRegion']",
-                                "  dest_bucket = properties['DestBucket']",
-                                "  objects = properties['Objects']",
-                                "  source_bucket = properties['SourceBucket']",
-                                "  source_prefix = properties['Prefix']",
-                                "  s3 = boto3.client('s3', dest_region)",
                                 "",
-                                "  location_constraint = False",
-                                "  for region in boto3.session.Session().get_available_regions('s3'):",
-                                "    try:",
-                                "      s3 = boto3.client('s3', region_name=region)",
-                                "      location_constraint = s3.get_bucket_location(Bucket=source_bucket)['LocationConstraint']",
-                                "      break",
-                                "    except botocore.exceptions.ClientError as e:",
-                                "      if e.response['Error']['Code'] != 'AccessDenied':",
-                                "        raise",
                                 "",
-                                "  if location_constraint == False:",
-                                "    raise Exception('Failed to get region for source bucket')",
-                                "  source_region = location_constraint if location_constraint else 'us-east-1'",
-                                "  source_client = boto3.client('s3', source_region)",
+                                "def get_region(bucket):",
+                                "    source_region = None",
+                                "    retries = 10",
+                                "    while not source_region:",
+                                "        response = requests.get('http://s3.amazonaws.com/%s' % bucket)",
+                                "        if 'x-amz-bucket-region' not in response.headers.keys():",
+                                "            retries -= 1",
+                                "            if retries == 0:",
+                                "                raise Exception('Failed to get source bucket region from s3 headers: %s %s HEADERS: %s' % (",
+                                "                    response.status_code,",
+                                "                    response.reason,",
+                                "                    str(response.headers)",
+                                "                ))",
+                                "            time.sleep(5)",
+                                "        else:",
+                                "            return response.headers['x-amz-bucket-region']",
                                 "",
-                                "  for object in objects:",
-                                "    key = source_prefix + object",
-                                "    copy_source = {",
-                                "      'Bucket': source_bucket,",
-                                "      'Key': key",
-                                "    }",
-                                "    s3.copy(copy_source, dest_bucket, key, SourceClient=source_client)",
-                                "  return cfnresponse.SUCCESS, None",
                                 "",
-                                "def update(properties, physical_id):",
-                                "  return create(properties, physical_id)",
+                                "def copy_objects(source_bucket, dest_bucket, prefix, objects):",
+                                "    s3 = boto3.client('s3')",
+                                "    for o in objects:",
+                                "        key = prefix + o",
+                                "        copy_source = {",
+                                "            'Bucket': source_bucket,",
+                                "            'Key': key",
+                                "        }",
+                                "        s3.copy_object(CopySource=copy_source, Bucket=dest_bucket, Key=key)",
                                 "",
-                                "def delete(properties, physical_id):",
-                                "  return cfnresponse.SUCCESS, None",
+                                "",
+                                "def delete_objects(bucket, prefix, objects):",
+                                "    s3 = boto3.client('s3')",
+                                "    objects = {'Objects': [{'Key': prefix + o} for o in objects]}",
+                                "    s3.delete_objects(Bucket=bucket, Delete=objects)",
+                                "",
+                                "",
+                                "def timeout(event, context):",
+                                "    logging.error('Execution is about to time out, sending failure response to CloudFormation')",
+                                "    cfnresponse.send(event, context, cfnresponse.FAILED, {}, None)",
+                                "",
                                 "",
                                 "def handler(event, context):",
-                                "  print \"Received event: %s\" % json.dumps(event)",
+                                "    # make sure we send a failure to CloudFormation if the function is going to timeout",
+                                "    threading.Timer((context.get_remaining_time_in_millis() / 1000.00) - 0.5, timeout, args=[event, context]).start()",
                                 "",
-                                "  status = cfnresponse.FAILED",
-                                "  new_physical_id = None",
-                                "",
-                                "  try:",
-                                "    properties = event.get('ResourceProperties')",
-                                "    physical_id = event.get('PhysicalResourceId')",
-                                "",
-                                "    status, new_physical_id = {",
-                                "      'Create': create,",
-                                "      'Update': update,",
-                                "      'Delete': delete",
-                                "    }.get(event['RequestType'], lambda x, y: (cfnresponse.FAILED, None))(properties, physical_id)",
-                                "  except Exception as e:",
-                                "    print \"Exception: %s\" % e",
-                                "    status = cfnresponse.FAILED",
-                                "  finally:",
-                                "    cfnresponse.send(event, context, status, {}, new_physical_id)",
+                                "    print('Received event: %s' % json.dumps(event))",
+                                "    output_bucket = None",
+                                "    status = cfnresponse.SUCCESS",
+                                "    try:",
+                                "        source_bucket = event['ResourceProperties']['SourceBucket']",
+                                "        dest_bucket = event['ResourceProperties']['DestBucket']",
+                                "        prefix = event['ResourceProperties']['Prefix']",
+                                "        objects = event['ResourceProperties']['Objects']",
+                                "        dest_region = os.environ['AWS_DEFAULT_REGION']",
+                                "        source_region = get_region(source_bucket)",
+                                "        if source_region != dest_region:",
+                                "            output_bucket = dest_bucket",
+                                "            if event['RequestType'] == 'Delete':",
+                                "                delete_objects(dest_bucket, prefix, objects)",
+                                "            else:",
+                                "                copy_objects(source_bucket, dest_bucket, prefix, objects)",
+                                "        else:",
+                                "            output_bucket = source_bucket",
+                                "    except Exception as e:",
+                                "        logging.error('Exception: %s' % e, exc_info=True)",
+                                "        status = cfnresponse.FAILED",
+                                "    finally:",
+                                "        cfnresponse.send(event, context, status, {'Bucket': output_bucket}, None)",
                                 ""
                             ]
                         ]
@@ -677,7 +692,10 @@
                 "Timeout": "300",
                 "Code": {
                     "S3Bucket": {
-                                "Ref": "LambdaZipsBucket"
+                                "Fn::GetAtt": [
+                                    "CopyZips",
+                                    "Bucket"
+                                ]
                     },
                     "S3Key": {
                         "Fn::Sub": "${QSS3KeyPrefix}lambdas/CreateSSHKey.zip"
@@ -759,18 +777,6 @@
                                             ]
                                         },
                                         {
-                                                    "Fn::Join": [
-                                                        "",
-                                                        [
-                                                            "arn:aws:s3:::",
-                                                            {
-                                                                "Ref": "LambdaZipsBucket"
-                                                            },
-                                                            "/*"
-                                                        ]
-                                                    ]
-                                        },
-                                        {
                                             "Fn::Join": [
                                                 "",
                                                 [
@@ -791,17 +797,6 @@
                                                     }
                                                 ]
                                             ]
-                                        },
-                                        {
-                                                    "Fn::Join": [
-                                                        "",
-                                                        [
-                                                            "arn:aws:s3:::",
-                                                            {
-                                                                "Ref": "LambdaZipsBucket"
-                                                            }
-                                                        ]
-                                                    ]
                                         }
                                     ]
                                 },
@@ -838,7 +833,10 @@
                 "Timeout": "300",
                 "Code": {
                     "S3Bucket": {
-                                "Ref": "LambdaZipsBucket"
+                                "Fn::GetAtt": [
+                                    "CopyZips",
+                                    "Bucket"
+                                ]
                     },
                     "S3Key": {
                         "Fn::Sub": "${QSS3KeyPrefix}lambdas/DeleteBucketContents.zip"
@@ -851,8 +849,7 @@
             "Version": "1.0",
             "DependsOn": [
                 "KeyBucket",
-                "OutputBucket",
-                "CopyZips"
+                "OutputBucket"
             ],
             "Properties": {
                 "ServiceToken": {
@@ -866,9 +863,6 @@
                 },
                 "OutputBucket": {
                     "Ref": "OutputBucket"
-                },
-                "ZipBucket": {
-                            "Ref": "LambdaZipsBucket"
                 }
             }
         },
@@ -992,7 +986,10 @@
                 "Timeout": "300",
                 "Code": {
                     "S3Bucket": {
-                                "Ref": "LambdaZipsBucket"
+                                "Fn::GetAtt": [
+                                    "CopyZips",
+                                    "Bucket"
+                                ]
                     },
                     "S3Key": {
                         "Fn::Sub": "${QSS3KeyPrefix}lambdas/GitPullS3.zip"
@@ -1085,7 +1082,10 @@
                 },
                 "Code": {
                     "S3Bucket": {
-                                "Ref": "LambdaZipsBucket"
+                                "Fn::GetAtt": [
+                                    "CopyZips",
+                                    "Bucket"
+                                ]
                     },
                     "S3Key": {
                         "Fn::Sub": "${QSS3KeyPrefix}lambdas/ZipDl.zip"
