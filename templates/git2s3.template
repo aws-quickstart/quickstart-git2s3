@@ -399,7 +399,8 @@
                                 "",
                                 "def handler(event, context):",
                                 "    # make sure we send a failure to CloudFormation if the function is going to timeout",
-                                "    threading.Timer((context.get_remaining_time_in_millis() / 1000.00) - 0.5, timeout, args=[event, context]).start()",
+                                "    timer = threading.Timer((context.get_remaining_time_in_millis() / 1000.00) - 0.5, timeout, args=[event, context])",
+                                "    timer.start()",
                                 "",
                                 "    print('Received event: %s' % json.dumps(event))",
                                 "    status = cfnresponse.SUCCESS",
@@ -416,6 +417,7 @@
                                 "        logging.error('Exception: %s' % e, exc_info=True)",
                                 "        status = cfnresponse.FAILED",
                                 "    finally:",
+                                "        timer.cancel()",
                                 "        cfnresponse.send(event, context, status, {}, None)",
                                 ""
                             ]
