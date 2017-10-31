@@ -7,19 +7,27 @@
 
 import cfnresponse
 import traceback
-from os import chmod,mkdir
-import sys
 import boto3
-from zipfile import ZipFile
-from Crypto.PublicKey import RSA
+from cryptography.hazmat.primitives import serialization as crypto_serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.backends import default_backend as crypto_default_backend
 
 def lambda_handler(event,context):
     try:
         if event['RequestType'] == 'Create':
             # Generate keys
-            new_key = RSA.generate(2048)
-            pub_key = new_key.publickey().exportKey(format='OpenSSH')
-            priv_key = new_key.exportKey()
+            new_key = rsa.generate_private_key(backend=crypto_default_backend(), public_exponent=65537, key_size=2048)
+            priv_key = new_key.private_bytes(
+                crypto_serialization.Encoding.PEM,
+                crypto_serialization.PrivateFormat.PKCS8,
+                crypto_serialization.NoEncryption()
+            )
+            pub_key = new_key.public_key().public_bytes(
+                crypto_serialization.Encoding.OpenSSH,
+                crypto_serialization.PublicFormat.OpenSSH
+            )
+            print(priv_key)
+            print(pub_key)
             # Encrypt private key
             kms = boto3.client('kms',region_name=event["ResourceProperties"]["Region"])
             enc_key = kms.encrypt(KeyId=event["ResourceProperties"]["KMSKey"],Plaintext=priv_key)['CiphertextBlob']
