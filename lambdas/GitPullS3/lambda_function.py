@@ -71,7 +71,7 @@ def create_repo(repo_path, remote_url, creds):
     return repo
 
 
-def pull_repo(repo, remote_url, creds):
+def pull_repo(repo, branch_name, remote_url, creds):
     remote_exists = False
     for r in repo.remotes:
         if r.url == remote_url:
@@ -79,31 +79,31 @@ def pull_repo(repo, remote_url, creds):
             remote = r
     if not remote_exists:
         remote = repo.create_remote('origin', remote_url)
-    logger.info('Fetching and merging changes...')
+    logger.info('Fetching and merging changes from %s branch %s', remote_url, branch_name)
     remote.fetch(callbacks=creds)
-    remote_master_id = repo.lookup_reference('refs/remotes/origin/master').target
-    repo.checkout_tree(repo.get(remote_master_id))
-    master_ref = repo.lookup_reference('refs/heads/master')
-    master_ref.set_target(remote_master_id)
-    repo.head.set_target(remote_master_id)
+    remote_branch_id = repo.lookup_reference('refs/remotes/origin/' + branch_name).target
+    repo.checkout_tree(repo.get(remote_branch_id))
+    # branch_ref = repo.lookup_reference('refs/heads/' + branch_name)
+    # branch_ref.set_target(remote_branch_id)
+    repo.head.set_target(remote_branch_id)
     return repo
 
 
 def zip_repo(repo_path, repo_name):
     logger.info('Creating zipfile...')
-    zf = ZipFile('/tmp/' + repo_name.replace('/', '_') + '.zip', 'w')
+    zf = ZipFile('/tmp/'+repo_name.replace('/', '_')+'.zip', 'w')
     for dirname, subdirs, files in os.walk(repo_path):
         if exclude_git:
             try:
                 subdirs.remove('.git')
             except ValueError:
                 pass
-        zdirname = dirname[len(repo_path) + 1:]
+        zdirname = dirname[len(repo_path)+1:]
         zf.write(dirname, zdirname)
         for filename in files:
             zf.write(os.path.join(dirname, filename), os.path.join(zdirname, filename))
     zf.close()
-    return '/tmp/' + repo_name.replace('/', '_') + '.zip'
+    return '/tmp/'+repo_name.replace('/', '_')+'.zip'
 
 
 def push_s3(filename, repo_name, outputbucket):
@@ -118,8 +118,7 @@ def lambda_handler(event, context):
     keybucket = event['context']['key-bucket']
     outputbucket = event['context']['output-bucket']
     pubkey = event['context']['public-key']
-    # Source IP ranges to allow requests from, if the IP is in one of these the request will not be checked
-    # for an api key
+    # Source IP ranges to allow requests from, if the IP is in one of these the request will not be chacked for an api key
     ipranges = []
     for i in event['context']['allowed-ips'].split(','):
         ipranges.append(ip_network(u'%s' % i))
@@ -149,18 +148,17 @@ def lambda_handler(event, context):
         logger.error('Source IP %s is not allowed' % event['context']['source-ip'])
         raise Exception('Source IP %s is not allowed' % event['context']['source-ip'])
     try:
+        branch_name = 'master'
         repo_name = event['body-json']['project']['path_with_namespace']
-    except Exception:
-        repo_name = event['body-json']['repository']['full_name']
+    except:
+        branch_name = event['body-json']['ref'].replace('refs/heads/', '')
+        repo_name = event['body-json']['repository']['full_name'] + '/' + branch_name
     try:
         remote_url = event['body-json']['project']['git_ssh_url']
     except Exception:
         try:
-            remote_url = 'git@' + event['body-json']['repository']['links']['html']['href'].replace(
-                'https://',
-                ''
-            ).replace('/', ':', 1) + '.git'
-        except Exception:
+            remote_url = 'git@'+event['body-json']['repository']['links']['html']['href'].replace('https://', '').replace('/', ':', 1)+'.git'
+        except:
             remote_url = event['body-json']['repository']['ssh_url']
     repo_path = '/tmp/%s' % repo_name
     creds = RemoteCallbacks(credentials=get_keys(keybucket, pubkey), )
@@ -171,7 +169,7 @@ def lambda_handler(event, context):
     except Exception:
         logger.info('creating new repo for %s in %s' % (remote_url, repo_path))
         repo = create_repo(repo_path, remote_url, creds)
-    pull_repo(repo, remote_url, creds)
+    pull_repo(repo, branch_name, remote_url, creds)
     zipfile = zip_repo(repo_path, repo_name)
     push_s3(zipfile, repo_name, outputbucket)
     if cleanup:

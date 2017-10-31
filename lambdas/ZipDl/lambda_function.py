@@ -8,6 +8,10 @@
 import boto3
 from botocore.vendored import requests
 import logging
+import os
+import shutil
+from zipfile import ZipFile
+from cStringIO import StringIO
 
 # Set to False to allow self-signed/invalid ssl certificates
 verify = False
@@ -21,10 +25,36 @@ logging.getLogger('botocore').setLevel(logging.ERROR)
 s3_client = boto3.client('s3')
 
 
+def get_members(zip):
+    parts = []
+    # get all the path prefixes
+    for name in zip.namelist():
+        # only check files (not directories)
+        if not name.endswith('/'):
+            # keep list of path elements (minus filename)
+            parts.append(name.split('/')[:-1])
+    # now find the common path prefix (if any)
+    prefix = os.path.commonprefix(parts)
+    if prefix:
+        # re-join the path elements
+        prefix = '/'.join(prefix) + '/'
+    # get the length of the common prefix
+    offset = len(prefix)
+    # now re-set the filenames
+    for zipinfo in zip.infolist():
+        name = zipinfo.filename
+        # only check files (not directories)
+        if len(name) > offset:
+            # remove the common prefix
+            zipinfo.filename = name[offset:]
+            yield zipinfo
+
+
 def lambda_handler(event, context):
+    logger.info('Event %s', event)
     OAUTH_token = event['context']['git-token']
     OutputBucket = event['context']['output-bucket']
-    temp_archive = '/tmp/archive.zip'
+    # temp_archive = '/tmp/archive.zip'
     # Identify git host flavour
     hostflavour = 'generic'
     if 'X-Hub-Signature' in event['params']['header'].keys():
@@ -34,7 +64,10 @@ def lambda_handler(event, context):
     elif 'User-Agent' in event['params']['header'].keys():
         if event['params']['header']['User-Agent'].startswith('Bitbucket-Webhooks'):
             hostflavour = 'bitbucket'
+        elif event['params']['header']['User-Agent'].startswith('GitHub-Hookshot'):
+            hostflavour = 'github'
     headers = {}
+    branch = 'master'
     if hostflavour == 'githubent':
         archive_url = event['body-json']['repository']['archive_url']
         owner = event['body-json']['repository']['owner']['name']
@@ -42,34 +75,51 @@ def lambda_handler(event, context):
         # replace the code archive download and branch reference placeholders
         archive_url = archive_url.replace('{archive_format}', 'zipball').replace('{/ref}', '/master')
         # add access token information to archive url
-        archive_url = archive_url + '?access_token=' + OAUTH_token
+        archive_url = archive_url+'?access_token='+OAUTH_token
+    elif hostflavour == 'github':
+        archive_url = event['body-json']['repository']['archive_url']
+        owner = event['body-json']['repository']['owner']['login']
+        name = event['body-json']['repository']['name']
+        # replace the code archive download and branch reference placeholders
+        branch_name = event['body-json']['ref'].replace('refs/heads/', '')
+        archive_url = archive_url.replace('{archive_format}', 'zipball').replace('{/ref}', '/' + branch_name)
+        # add access token information to archive url
+        archive_url = archive_url+'?access_token='+OAUTH_token
     elif hostflavour == 'gitlab':
         # https://gitlab.com/jaymcconnell/gitlab-test-30/repository/archive.zip?ref=master
-        archive_url = event['body-json']['project']['http_url'].replace(
-            '.git',
-            '/repository/archive.zip?ref=master'
-        ) + '&private_token=' + OAUTH_token
+        archive_url = event['body-json']['project']['http_url'].replace('.git', '/repository/archive.zip?ref=master')+'&private_token='+OAUTH_token
         owner = event['body-json']['project']['namespace']
         name = event['body-json']['project']['name']
     elif hostflavour == 'bitbucket':
-        archive_url = event['body-json']['repository']['links']['html']['href'] + '/get/master.zip'
+        branch = event['body-json']['push']['changes'][0]['new']['name']
+        archive_url = event['body-json']['repository']['links']['html']['href']+'/get/' + branch + '.zip'
         owner = event['body-json']['repository']['owner']['username']
         name = event['body-json']['repository']['name']
-        r = requests.post('https://bitbucket.org/site/oauth2/access_token', data={'grant_type': 'client_credentials'},
-                          auth=(event['context']['oauth-key'], event['context']['oauth-secret']))
+        r = requests.post('https://bitbucket.org/site/oauth2/access_token', data={'grant_type': 'client_credentials'}, auth=(event['context']['oauth-key'], event['context']['oauth-secret']))
         if 'error' in r.json().keys():
             logger.error('Could not get OAuth token. %s: %s' % (r.json()['error'], r.json()['error_description']))
             raise Exception('Failed to get OAuth token')
         headers['Authorization'] = 'Bearer ' + r.json()['access_token']
-    else:
-        raise Exception("Cannot identify git server")
-    s3_archive_file = "%s/%s/%s_%s.zip" % (owner, name, owner, name)
+    s3_archive_file = "%s/%s/%s/%s.zip" % (owner, name, branch, name)
     # download the code archive via archive url
     logger.info('Downloading archive from %s' % archive_url)
     r = requests.get(archive_url, verify=verify, headers=headers)
-    with open(temp_archive, "wb") as codearchive:
-        codearchive.write(r.content)
-    # upload the archive to s3 bucket
+    f = StringIO(r.content)
+    zip = ZipFile(f)
+    path = '/tmp/code'
+    zipped_code = '/tmp/zipped_code'
+    try:
+        shutil.rmtree(path)
+        os.remove(zipped_code + '.zip')
+    except:
+        pass
+    finally:
+        os.makedirs(path)
+    # Write to /tmp dir without any common preffixes
+    zip.extractall(path, get_members(zip))
+
+    # Create zip from /tmp dir without any common preffixes
+    shutil.make_archive(zipped_code, 'zip', path)
     logger.info("Uploading zip to S3://%s/%s" % (OutputBucket, s3_archive_file))
-    s3_client.upload_file(temp_archive, OutputBucket, s3_archive_file)
+    s3_client.upload_file(zipped_code + '.zip', OutputBucket, s3_archive_file)
     logger.info('Upload Complete')
