@@ -144,6 +144,7 @@ def lambda_handler(event, context):
             k2 = str(event['params']['header']['X-Hub-Signature'].replace('sha1=', ''))
             if k1 == k2:
                 secure = True
+    # TODO: Add the ability to clone TFS repo using SSH keys
     if not secure:
         logger.error('Source IP %s is not allowed' % event['context']['source-ip'])
         raise Exception('Source IP %s is not allowed' % event['context']['source-ip'])
