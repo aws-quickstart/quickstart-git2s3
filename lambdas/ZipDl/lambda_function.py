@@ -8,6 +8,7 @@
 import boto3
 from botocore.vendored import requests
 import logging
+import base64
 import os
 import shutil
 from zipfile import ZipFile
@@ -66,6 +67,9 @@ def lambda_handler(event, context):
             hostflavour = 'bitbucket'
         elif event['params']['header']['User-Agent'].startswith('GitHub-Hookshot'):
             hostflavour = 'github'
+    elif event['body-json']['publisherId'] == 'tfs':
+        hostflavour='tfs'
+    
     headers = {}
     branch = 'master'
     if hostflavour == 'githubent':
@@ -100,6 +104,15 @@ def lambda_handler(event, context):
             logger.error('Could not get OAuth token. %s: %s' % (r.json()['error'], r.json()['error_description']))
             raise Exception('Failed to get OAuth token')
         headers['Authorization'] = 'Bearer ' + r.json()['access_token']
+    elif hostflavour == 'tfs':
+        archive_url = event['body-json']['resourceContainers']['account']['baseUrl'] + 'DefaultCollection/' + event['body-json']['resourceContainers']['project']['id'] + '/_apis/git/repositories/' + event['body-json']['resource']['repository']['id'] + '/items'
+        owner = event['body-json']['resource']['pushedBy']['displayName']
+        name = event['body-json']['resource']['repository']['name']
+        pat_in_base64 = base64.encodestring(':%s' % event['context']['git-token'])
+        headers['Authorization'] = 'Basic %s' % pat_in_base64
+        headers['Authorization'] = headers['Authorization'].replace('\n','')
+        headers['Accept'] = 'application/zip'
+
     s3_archive_file = "%s/%s/%s/%s.zip" % (owner, name, branch, name)
     # download the code archive via archive url
     logger.info('Downloading archive from %s' % archive_url)
