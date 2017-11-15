@@ -9,6 +9,10 @@
     },
     {
         "ParameterValue": "",
+        "ParameterKey": "BranchFilterList"
+    },
+    {
+        "ParameterValue": "",
         "ParameterKey": "GitToken"
     },
     {
@@ -22,5 +26,9 @@
     {
         "ParameterValue": "",
         "ParameterKey": "OutputBucketName"
+    },
+    {
+        "ParameterValue": "false",
+        "ParameterKey": "PullTagsOnly"
     }
 ]

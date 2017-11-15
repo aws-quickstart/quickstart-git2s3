@@ -19,7 +19,9 @@
                     },
                     "Parameters": [
                         "ApiSecret",
-                        "AllowedIps"
+                        "AllowedIps",
+                        "BranchFilterList",
+                        "PullTagsOnly"
                     ]
                 },
                 {
@@ -49,6 +51,9 @@
                 "ApiSecret": {
                     "default": "API Secret"
                 },
+                "BranchFilterList": {
+                    "default": "Branches to Pull"
+                },
                 "CustomDomainName": {
                     "default": "Custom Domain Name"
                 },
@@ -69,6 +74,9 @@
                 },
                 "QSS3KeyPrefix": {
                     "default": "Quick Start S3 Key Prefix"
+                },
+                "PullTagsOnly": {
+                    "default": "Tagged Commits Only"
                 }
             }
         }
@@ -84,6 +92,11 @@
             "Type": "String",
             "Default": "",
             "NoEcho": "true"
+        },
+        "BranchFilterList": {
+            "Description": "gitpull method only. Colon (:) delimited list of branches to respond to webhooks for. Notifications about branches not in list will succeed without being saved to s3. Leave blank to pull all branches.",
+            "Type": "String",
+            "Default": ""
         },
         "CustomDomainName": {
             "Description": "Use a custom domain name for the webhook endpoint, if left blank API Gateway will create a domain name for you",
@@ -128,6 +141,16 @@
             "Default": "git2s3/latest/",
             "Description": "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).",
             "Type": "String"
+        },
+        "PullTagsOnly": {
+            "Description": "If false, the latest commit for the branch will be stored to s3. If true, only the latest tagged commit will be stored.",
+            "Type": "String",
+            "Default": "false",
+            "AllowedValues": [
+                "true",
+                "false"
+            ],
+            "ConstraintDescription": " The allowed values are 'true' and 'false'."
         }
     },
     "Conditions": {
@@ -1239,12 +1262,14 @@
                                                     },
                                                     "\",\n",
                                                     "    \"output-bucket\" : \"$stageVariables.outputbucket\",\n",
+                                                    "    \"bucket-filter\" : \"$stageVariables.bucketfilterlist\",\n",
+                                                    "    \"tags-only\" : \"$stageVariables.pulltagsonly\",\n",
                                                     "    \"public-key\" : \"",
                                                     {
                                                         "Ref": "CreateSSHKey"
                                                     },
                                                     "\",\n",
-                                                    "    \"raw-body\" : \"$util.escapeJavaScript($input.body)\"\n",
+                                                    "    \"raw-body\" : \"$util.escapeJavaScript($input.body).replace(\"\\'\",\"'\")\"\n",
                                                     "    }\n",
                                                     "}"
                                                 ]
@@ -1427,6 +1452,9 @@
                             }
                         ]
                     },
+                    "branchfilterlist": {
+                        "Ref": "BranchFilterList"
+                    },
                     "gittoken": {
                         "Fn::If": [
                             "UseGitToken",
@@ -1459,7 +1487,10 @@
                                 "Ref": "AWS::NoValue"
                             }
                         ]
-                    }
+                    },
+                    "pulltagsonly": {
+                        "Ref": "PullTagsOnly"
+                    },
                 }
             }
         },
