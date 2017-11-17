@@ -1244,7 +1244,7 @@
                                                         "Ref": "CreateSSHKey"
                                                     },
                                                     "\",\n",
-                                                    "    \"raw-body\" : \"$util.escapeJavaScript($input.body)\"\n",
+                                                    "    \"raw-body\" : \"$util.escapeJavaScript($input.body).replace(\"\\'\",\"'\")\"\n",
                                                     "    }\n",
                                                     "}"
                                                 ]
