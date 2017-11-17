@@ -19,7 +19,8 @@
                     },
                     "Parameters": [
                         "ApiSecret",
-                        "AllowedIps"
+                        "AllowedIps",
+                        "BranchFilterList"
                     ]
                 },
                 {
@@ -48,6 +49,9 @@
                 },
                 "ApiSecret": {
                     "default": "API Secret"
+                },
+                "BranchFilterList": {
+                    "default": "Branches to Pull"
                 },
                 "CustomDomainName": {
                     "default": "Custom Domain Name"
@@ -84,6 +88,11 @@
             "Type": "String",
             "Default": "",
             "NoEcho": "true"
+        },
+        "BranchFilterList": {
+            "Description": "gitpull method only. Colon (:) delimited list of branches to respond to webhooks for. Notifications about branches not in list will succeed without being saved to s3. Leave blank to pull all branches.",
+            "Type": "String",
+            "Default": ""
         },
         "CustomDomainName": {
             "Description": "Use a custom domain name for the webhook endpoint, if left blank API Gateway will create a domain name for you",
@@ -149,6 +158,18 @@
                     "Fn::Equals": [
                         {
                             "Ref": "ApiSecret"
+                        },
+                        ""
+                    ]
+                }
+            ]
+        },
+        "UseBranchFilterList": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "BranchFilterList"
                         },
                         ""
                     ]
@@ -1239,6 +1260,7 @@
                                                     },
                                                     "\",\n",
                                                     "    \"output-bucket\" : \"$stageVariables.outputbucket\",\n",
+                                                    "    \"branch-filter\" : \"$stageVariables.branchfilterlist\",\n",
                                                     "    \"public-key\" : \"",
                                                     {
                                                         "Ref": "CreateSSHKey"
@@ -1421,6 +1443,17 @@
                             "UseApiSecret",
                             {
                                 "Ref": "ApiSecret"
+                            },
+                            {
+                                "Ref": "AWS::NoValue"
+                            }
+                        ]
+                    },
+                    "branchfilterlist": {
+                        "Fn::If": [
+                            "UseBranchFilterList",
+                            {
+                                "Ref": "BranchFilterList"
                             },
                             {
                                 "Ref": "AWS::NoValue"
