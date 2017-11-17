@@ -81,7 +81,11 @@ def pull_repo(repo, branch_name, remote_url, creds):
         remote = repo.create_remote('origin', remote_url)
     logger.info('Fetching and merging changes from %s branch %s', remote_url, branch_name)
     remote.fetch(callbacks=creds)
-    remote_branch_id = repo.lookup_reference('refs/remotes/origin/' + branch_name).target
+    if(branch_name.startswith('tags/')):
+        ref = 'refs/' + branch_name
+    else:
+        ref = 'refs/remotes/origin/' + branch_name
+    remote_branch_id = repo.lookup_reference(ref).target
     repo.checkout_tree(repo.get(remote_branch_id))
     # branch_ref = repo.lookup_reference('refs/heads/' + branch_name)
     # branch_ref.set_target(remote_branch_id)
@@ -148,12 +152,17 @@ def lambda_handler(event, context):
     if not secure:
         logger.error('Source IP %s is not allowed' % event['context']['source-ip'])
         raise Exception('Source IP %s is not allowed' % event['context']['source-ip'])
-    try:
-        branch_name = 'master'
-        repo_name = event['body-json']['project']['path_with_namespace']
-    except:
-        branch_name = event['body-json']['ref'].replace('refs/heads/', '')
-        repo_name = event['body-json']['repository']['full_name'] + '/' + branch_name
+
+    if('action' in event['body-json'] and event['body-json']['action'] == 'published'):
+        branch_name = 'tags/%s' % event['body-json']['release']['tag_name']
+        repo_name = event['body-json']['repository']['full_name'] + '/release'
+    else:
+        try:
+            branch_name = 'master'
+            repo_name = event['body-json']['project']['path_with_namespace']
+        except:
+            branch_name = event['body-json']['ref'].replace('refs/heads/', '')
+            repo_name = event['body-json']['repository']['full_name'] + '/branch/' + branch_name
     try:
         remote_url = event['body-json']['project']['git_ssh_url']
     except Exception:
