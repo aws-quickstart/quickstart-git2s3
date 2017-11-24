@@ -122,6 +122,7 @@ def lambda_handler(event, context):
     keybucket = event['context']['key-bucket']
     outputbucket = event['context']['output-bucket']
     pubkey = event['context']['public-key']
+    branchfilter = event['context']['branch-filter']
     # Source IP ranges to allow requests from, if the IP is in one of these the request will not be chacked for an api key
     ipranges = []
     for i in event['context']['allowed-ips'].split(','):
@@ -163,6 +164,11 @@ def lambda_handler(event, context):
         except:
             branch_name = event['body-json']['ref'].replace('refs/heads/', '')
             repo_name = event['body-json']['repository']['full_name'] + '/branch/' + branch_name
+        if len(branchfilter) > 0:
+            branches = branchfilter.split(":")
+            if branch_name not in branches:
+                logger.info('Branch %s not in filter criteria, exiting...' % branch_name)
+                return 'Branch %s skipped due to filter criteria' % branch_name
     try:
         remote_url = event['body-json']['project']['git_ssh_url']
     except Exception:

@@ -9,6 +9,10 @@
     },
     {
         "ParameterValue": "",
+        "ParameterKey": "BranchFilterList"
+    },
+    {
+        "ParameterValue": "",
         "ParameterKey": "GitToken"
     },
     {
