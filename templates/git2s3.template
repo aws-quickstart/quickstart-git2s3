@@ -242,10 +242,10 @@
                     "Ref": "QSS3KeyPrefix"
                 },
                 "Objects": [
-                    "lambdas/CreateSSHKey.zip",
-                    "lambdas/DeleteBucketContents.zip",
-                    "lambdas/GitPullS3.zip",
-                    "lambdas/ZipDl.zip"
+                    "functions/packages/CreateSSHKey/lambda.zip",
+                    "functions/packages/DeleteBucketContents/lambda.zip",
+                    "functions/packages/GitPullS3/lambda.zip",
+                    "functions/packages/ZipDl/lambda.zip"
                 ]
             }
         },
@@ -264,10 +264,13 @@
                         }
                     ]
                 },
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+                ],
                 "Path": "/",
                 "Policies": [
                     {
-                        "PolicyName": "git2cp-sshkeygen",
+                        "PolicyName": "lambda-copier",
                         "PolicyDocument": {
                             "Version": "2012-10-17",
                             "Statement": [
@@ -278,35 +281,7 @@
                                     ],
                                     "Resource": [
                                         {
-                                            "Fn::Join": [
-                                                "",
-                                                [
-                                                    "arn:aws:s3:::",
-                                                    {
-                                                        "Ref": "QSS3BucketName"
-                                                    },
-                                                    "/*"
-                                                ]
-                                            ]
-                                        }
-                                    ]
-                                },
-                                {
-                                    "Effect": "Allow",
-                                    "Action": [
-                                        "s3:GetBucketLocation"
-                                    ],
-                                    "Resource": [
-                                        {
-                                            "Fn::Join": [
-                                                "",
-                                                [
-                                                    "arn:aws:s3:::",
-                                                    {
-                                                        "Ref": "QSS3BucketName"
-                                                    }
-                                                ]
-                                            ]
+                                            "Fn::Sub": "arn:aws:s3:::${QSS3BucketName}/${QSS3KeyPrefix}*"
                                         }
                                     ]
                                 },
@@ -318,28 +293,8 @@
                                     ],
                                     "Resource": [
                                         {
-                                            "Fn::Join": [
-                                                "",
-                                                [
-                                                    "arn:aws:s3:::",
-                                                    {
-                                                        "Ref": "LambdaZipsBucket"
-                                                    },
-                                                    "/*"
-                                                ]
-                                            ]
+                                            "Fn::Sub": "arn:aws:s3:::${LambdaZipsBucket}/${QSS3KeyPrefix}*"
                                         }
-                                    ]
-                                },
-                                {
-                                    "Effect": "Allow",
-                                    "Action": [
-                                        "logs:CreateLogGroup",
-                                        "logs:CreateLogStream",
-                                        "logs:PutLogEvents"
-                                    ],
-                                    "Resource": [
-                                        "arn:aws:logs:*:*:*"
                                     ]
                                 }
                             ]
@@ -369,9 +324,7 @@
                                 "import json",
                                 "import logging",
                                 "import threading",
-                                "",
                                 "import boto3",
-                                "",
                                 "import cfnresponse",
                                 "",
                                 "",
