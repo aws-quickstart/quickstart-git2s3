@@ -622,7 +622,7 @@
                         "Ref": "LambdaZipsBucket"
                     },
                     "S3Key": {
-                        "Fn::Sub": "${QSS3KeyPrefix}lambdas/CreateSSHKey.zip"
+                        "Fn::Sub": "${QSS3KeyPrefix}functions/packages/CreateSSHKey/lambda.zip"
                     }
                 }
             }
@@ -760,7 +760,7 @@
                         "Ref": "LambdaZipsBucket"
                     },
                     "S3Key": {
-                        "Fn::Sub": "${QSS3KeyPrefix}lambdas/DeleteBucketContents.zip"
+                        "Fn::Sub": "${QSS3KeyPrefix}functions/packages/DeleteBucketContents/lambda.zip"
                     }
                 }
             }
@@ -910,7 +910,7 @@
                         "Ref": "LambdaZipsBucket"
                     },
                     "S3Key": {
-                        "Fn::Sub": "${QSS3KeyPrefix}lambdas/GitPullS3.zip"
+                        "Fn::Sub": "${QSS3KeyPrefix}functions/packages/GitPullS3/lambda.zip"
                     }
                 }
             }
@@ -1003,7 +1003,7 @@
                         "Ref": "LambdaZipsBucket"
                     },
                     "S3Key": {
-                        "Fn::Sub": "${QSS3KeyPrefix}lambdas/ZipDl.zip"
+                        "Fn::Sub": "${QSS3KeyPrefix}functions/packages/ZipDl/lambda.zip"
                     }
                 },
                 "Runtime": "python2.7",
