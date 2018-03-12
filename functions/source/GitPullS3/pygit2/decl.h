@@ -207,11 +207,30 @@ struct git_remote_callbacks {
 
 typedef struct git_remote_callbacks git_remote_callbacks;
 
+typedef enum {
+	GIT_PROXY_NONE,
+	GIT_PROXY_AUTO,
+	GIT_PROXY_SPECIFIED,
+} git_proxy_t;
+
+typedef struct {
+	unsigned int version;
+	git_proxy_t type;
+	const char *url;
+	git_cred_acquire_cb credentials;
+        git_transport_certificate_check_cb certificate_check;
+	void *payload;
+} git_proxy_options;
+
+#define GIT_PROXY_OPTIONS_VERSION ...
+int git_proxy_init_options(git_proxy_options *opts, unsigned int version);
+
 typedef struct {
 	unsigned int version;
 	unsigned int pb_parallelism;
 	git_remote_callbacks callbacks;
-    git_strarray custom_headers;
+	git_proxy_options proxy_opts;
+	git_strarray custom_headers;
 } git_push_options;
 
 #define GIT_PUSH_OPTIONS_VERSION ...
@@ -236,7 +255,8 @@ typedef struct {
 	git_fetch_prune_t prune;
 	int update_fetchhead;
 	git_remote_autotag_option_t download_tags;
-    git_strarray custom_headers;
+	git_proxy_options proxy_opts;
+	git_strarray custom_headers;
 } git_fetch_options;
 
 #define GIT_FETCH_OPTIONS_VERSION ...
@@ -286,6 +306,9 @@ int git_refspec_dst_matches(const git_refspec *refspec, const char *refname);
 int git_refspec_transform(git_buf *buf, const git_refspec *spec, const char *name);
 int git_refspec_rtransform(git_buf *buf, const git_refspec *spec, const char *name);
 
+int git_cred_username_new(
+	git_cred **out,
+	const char *username);
 int git_cred_userpass_plaintext_new(
 	git_cred **out,
 	const char *username,
@@ -390,7 +413,16 @@ int git_diff_tree_to_index(git_diff **diff, git_repository *repo, git_tree *old_
  * git_checkout
  */
 
-typedef enum { ... } git_checkout_notify_t;
+typedef enum {
+	GIT_CHECKOUT_NOTIFY_NONE      = 0,
+	GIT_CHECKOUT_NOTIFY_CONFLICT  = 1,
+	GIT_CHECKOUT_NOTIFY_DIRTY     = 2,
+	GIT_CHECKOUT_NOTIFY_UPDATED   = 4,
+	GIT_CHECKOUT_NOTIFY_UNTRACKED = 8,
+	GIT_CHECKOUT_NOTIFY_IGNORED   = 16,
+
+	GIT_CHECKOUT_NOTIFY_ALL       = 0x0FFFF
+} git_checkout_notify_t;
 
 typedef int (*git_checkout_notify_cb)(
 	git_checkout_notify_t why,
@@ -723,7 +755,12 @@ void git_blame_free(git_blame *blame);
  * Merging
  */
 
-typedef enum { ... } git_merge_flag_t;
+typedef enum {
+	GIT_MERGE_FIND_RENAMES = 1,
+	GIT_MERGE_FAIL_ON_CONFLICT = 2,
+	GIT_MERGE_SKIP_REUC = 4,
+	GIT_MERGE_NO_RECURSIVE = 8,
+} git_merge_flag_t;
 
 typedef enum {
 	GIT_MERGE_FILE_FAVOR_NORMAL = 0,
@@ -738,7 +775,8 @@ typedef struct {
 	unsigned int rename_threshold;
 	unsigned int target_limit;
 	git_diff_similarity_metric *metric;
-    unsigned int recursion_limit;
+	unsigned int recursion_limit;
+	const char *default_driver;
 	git_merge_file_favor_t file_favor;
 	unsigned int file_flags;
 } git_merge_options;
@@ -781,6 +819,56 @@ int git_merge_commits(git_index **out, git_repository *repo, const git_commit *o
 int git_merge_trees(git_index **out, git_repository *repo, const git_tree *ancestor_tree, const git_tree *our_tree, const git_tree *their_tree, const git_merge_options *opts);
 int git_merge_file_from_index(git_merge_file_result *out, git_repository *repo, const git_index_entry *ancestor, const git_index_entry *ours, const git_index_entry *theirs, const git_merge_file_options *opts);
 void git_merge_file_result_free(git_merge_file_result *result);
+
+/*
+ * git_stash
+ */
+
+typedef int (*git_stash_cb)(
+	size_t index, const char* message, const git_oid *stash_id, void *payload);
+
+typedef enum {
+	GIT_STASH_APPLY_PROGRESS_NONE = 0,
+	GIT_STASH_APPLY_PROGRESS_LOADING_STASH = 1,
+	GIT_STASH_APPLY_PROGRESS_ANALYZE_INDEX = 2,
+	GIT_STASH_APPLY_PROGRESS_ANALYZE_MODIFIED = 3,
+	GIT_STASH_APPLY_PROGRESS_ANALYZE_UNTRACKED = 4,
+	GIT_STASH_APPLY_PROGRESS_CHECKOUT_UNTRACKED = 5,
+	GIT_STASH_APPLY_PROGRESS_CHECKOUT_MODIFIED = 6,
+	GIT_STASH_APPLY_PROGRESS_DONE = 7,
+} git_stash_apply_progress_t;
+
+typedef int (*git_stash_apply_progress_cb)(
+	git_stash_apply_progress_t progress, void *payload);
+
+typedef enum {
+	GIT_STASH_DEFAULT = 0,
+	GIT_STASH_KEEP_INDEX = 1,
+	GIT_STASH_INCLUDE_UNTRACKED = 2,
+	GIT_STASH_INCLUDE_IGNORED = 4,
+} git_stash_flags;
+
+typedef enum {
+	GIT_STASH_APPLY_DEFAULT = 0,
+	GIT_STASH_APPLY_REINSTATE_INDEX = 1,
+} git_stash_apply_flags;
+
+typedef struct git_stash_apply_options {
+	unsigned int version;
+	git_stash_apply_flags flags;
+	git_checkout_options checkout_options;
+	git_stash_apply_progress_cb progress_cb;
+	void *progress_payload;
+} git_stash_apply_options;
+
+#define GIT_STASH_APPLY_OPTIONS_VERSION ...
+
+int git_stash_save(git_oid *out, git_repository *repo, const git_signature *stasher, const char *message, uint32_t flags);
+int git_stash_apply_init_options(git_stash_apply_options *opts, unsigned int version);
+int git_stash_apply(git_repository *repo, size_t index, const git_stash_apply_options *options);
+int git_stash_foreach(git_repository *repo, git_stash_cb callback, void *payload);
+int git_stash_drop(git_repository *repo, size_t index);
+int git_stash_pop(git_repository *repo, size_t index, const git_stash_apply_options *options);
 
 /*
  * Describe
@@ -837,3 +925,5 @@ typedef enum {
 
 int git_attr_get(const char **value_out, git_repository *repo, uint32_t flags, const char *path, const char *name);
 git_attr_t git_attr_value(const char *attr);
+
+int git_revert_commit(git_index **out, git_repository *repo, git_commit *revert_commit, git_commit *our_commit, unsigned int mainline, const git_merge_options *merge_options);

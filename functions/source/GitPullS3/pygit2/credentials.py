@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2010-2015 The pygit2 contributors
+# Copyright 2010-2017 The pygit2 contributors
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License, version 2,
@@ -27,8 +27,31 @@
 
 from .ffi import C
 
+GIT_CREDTYPE_USERNAME = C.GIT_CREDTYPE_USERNAME
 GIT_CREDTYPE_USERPASS_PLAINTEXT = C.GIT_CREDTYPE_USERPASS_PLAINTEXT
 GIT_CREDTYPE_SSH_KEY = C.GIT_CREDTYPE_SSH_KEY
+
+
+class Username(object):
+    """Username credentials
+
+    This is an object suitable for passing to a remote's credentials
+    callback and for returning from said callback.
+    """
+
+    def __init__(self, username):
+        self._username = username
+
+    @property
+    def credential_type(self):
+        return GIT_CREDTYPE_USERNAME
+
+    @property
+    def credential_tuple(self):
+        return (self._username,)
+
+    def __call__(self, _url, _username, _allowed):
+        return self
 
 
 class UserPass(object):
@@ -55,17 +78,26 @@ class UserPass(object):
 
 
 class Keypair(object):
-    """SSH key pair credentials
+    """
+    SSH key pair credentials.
 
     This is an object suitable for passing to a remote's credentials
     callback and for returning from said callback.
 
-    :param str username: the username being used to authenticate with the
-        remote server
-    :param str pubkey: the path to the user's public key file
-    :param str privkey: the path to the user's private key file
-    :param str passphrase: the password used to decrypt the private key file,
-        or empty string if no passphrase is required.
+    Parameters:
+
+    username : str
+        The username being used to authenticate with the remote server.
+
+    pubkey : str
+        The path to the user's public key file.
+
+    privkey : str
+        The path to the user's private key file.
+
+    passphrase : str
+        The password used to decrypt the private key file, or empty string if
+        no passphrase is required.
     """
 
     def __init__(self, username, pubkey, privkey, passphrase):

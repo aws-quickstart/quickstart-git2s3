@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2010-2015 The pygit2 contributors
+# Copyright 2010-2017 The pygit2 contributors
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License, version 2,
@@ -27,6 +27,8 @@
 
 # Import from the future
 from __future__ import absolute_import, unicode_literals
+
+import weakref
 
 # Import from pygit2
 from _pygit2 import Oid, Tree, Diff
@@ -97,14 +99,14 @@ class Index(object):
         return GenericIterator(self)
 
     def read(self, force=True):
-        """Update the contents the Index
+        """
+        Update the contents of the Index by reading from a file.
 
-        Update the contents by reading from a file
+        Parameters:
 
-        Arguments:
-
-        force: if True (the default) allways reload. If False, only if
-        the file has changed
+        force
+            If True (the default) allways reload. If False, only if the file
+            has changed.
         """
 
         err = C.git_index_read(self._index, force)
@@ -155,6 +157,9 @@ class Index(object):
         It returns the id of the resulting tree.
         """
         coid = ffi.new('git_oid *')
+
+        repo = repo or self._repo
+
         if repo:
             err = C.git_index_write_tree_to(coid, self._index, repo._repo)
         else:
@@ -203,18 +208,22 @@ class Index(object):
         check_error(err, True)
 
     def diff_to_workdir(self, flags=0, context_lines=3, interhunk_lines=0):
-        """Diff the index against the working directory. Return a <Diff> object
+        """
+        Diff the index against the working directory. Return a <Diff> object
         with the differences between the index and the working copy.
 
-        Arguments:
+        Parameters:
 
-        flags: a GIT_DIFF_* constant.
+        flags
+            A GIT_DIFF_* constant.
 
-        context_lines: the number of unchanged lines that define the
-        boundary of a hunk (and to display before and after)
+        context_lines
+            The number of unchanged lines that define the boundary of a hunk
+            (and to display before and after).
 
-        interhunk_lines: the maximum number of unchanged lines between hunk
-        boundaries before the hunks will be merged into a one
+        interhunk_lines
+            The maximum number of unchanged lines between hunk boundaries
+            before the hunks will be merged into a one.
         """
         repo = self._repo
         if repo is None:
@@ -236,20 +245,25 @@ class Index(object):
         return Diff.from_c(bytes(ffi.buffer(cdiff)[:]), repo)
 
     def diff_to_tree(self, tree, flags=0, context_lines=3, interhunk_lines=0):
-        """Diff the index against a tree.  Return a <Diff> object with the
+        """
+        Diff the index against a tree.  Return a <Diff> object with the
         differences between the index and the given tree.
 
-        Arguments:
+        Parameters:
 
-        tree: the tree to diff.
+        tree
+            The tree to diff.
 
-        flags: a GIT_DIFF_* constant.
+        flags
+            A GIT_DIFF_* constant.
 
-        context_lines: the number of unchanged lines that define the boundary
-        of a hunk (and to display before and after)
+        context_lines
+            The number of unchanged lines that define the boundary of a hunk
+            (and to display before and after).
 
-        interhunk_lines: the maximum number of unchanged lines between hunk
-        boundaries before the hunks will be merged into a one.
+        interhunk_lines
+            The maximum number of unchanged lines between hunk boundaries
+            before the hunks will be merged into a one.
         """
         repo = self._repo
         if repo is None:
@@ -305,10 +319,12 @@ class Index(object):
             self._conflicts = None
             return None
 
-        if self._conflicts is None:
-            self._conflicts = ConflictCollection(self)
+        if self._conflicts is None or self._conflicts() is None:
+            conflicts = ConflictCollection(self)
+            self._conflicts = weakref.ref(conflicts)
+            return conflicts
 
-        return self._conflicts
+        return self._conflicts()
 
 
 class IndexEntry(object):
