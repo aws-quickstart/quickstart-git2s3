@@ -149,20 +149,24 @@ def lambda_handler(event, context):
             if k1 == k2:
                 secure = True
     # TODO: Add the ability to clone TFS repo using SSH keys
+    try:
+        full_name = event['body-json']['repository']['full_name']
+    except KeyError:
+        full_name = event['body-json']['repository']['fullName']
     if not secure:
         logger.error('Source IP %s is not allowed' % event['context']['source-ip'])
         raise Exception('Source IP %s is not allowed' % event['context']['source-ip'])
 
     if('action' in event['body-json'] and event['body-json']['action'] == 'published'):
         branch_name = 'tags/%s' % event['body-json']['release']['tag_name']
-        repo_name = event['body-json']['repository']['full_name'] + '/release'
+        repo_name = full_name + '/release'
     else:
         try:
             branch_name = 'master'
             repo_name = event['body-json']['project']['path_with_namespace']
         except:
             branch_name = event['body-json']['ref'].replace('refs/heads/', '')
-            repo_name = event['body-json']['repository']['full_name'] + '/branch/' + branch_name
+            repo_name = full_name + '/branch/' + branch_name
     try:
         remote_url = event['body-json']['project']['git_ssh_url']
     except Exception:
@@ -189,3 +193,4 @@ def lambda_handler(event, context):
         os.remove('/tmp/id_rsa')
         os.remove('/tmp/id_rsa.pub')
     return 'Successfully updated %s' % repo_name
+
