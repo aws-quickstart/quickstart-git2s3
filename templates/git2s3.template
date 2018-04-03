@@ -77,7 +77,7 @@
         "AllowedIps": {
             "Description": "gitpull method only. Comma seperated list of IP CIDR blocks for source IP authentication. The BitBucket Cloud IP ranges are provided as defaults.",
             "Type": "String",
-            "Default": "131.103.20.160/27,165.254.145.0/26,104.192.143.0/24"
+            "Default": "34.198.203.127/32,34.198.178.64/32,34.198.32.85/32,104.192.136.0/21"
         },
         "ApiSecret": {
             "Description": "gitpull method only. WebHook Secrets for use with GitHub Enterprise and GitLab. If a secret is matched IP range authentication is bypassed. Cannot contain: , \\ \"",
