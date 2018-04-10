@@ -153,6 +153,9 @@ def lambda_handler(event, context):
         full_name = event['body-json']['repository']['full_name']
     except KeyError:
         full_name = event['body-json']['repository']['fullName']
+    except KeyError:
+        # gitlab -- https://docs.gitlab.com/ee/user/project/integrations/webhooks.html
+        full_name = event['body-json']['project']['git_ssh_url']
     if not secure:
         logger.error('Source IP %s is not allowed' % event['context']['source-ip'])
         raise Exception('Source IP %s is not allowed' % event['context']['source-ip'])
