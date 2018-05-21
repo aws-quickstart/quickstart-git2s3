@@ -152,7 +152,10 @@ def lambda_handler(event, context):
     try:
         full_name = event['body-json']['repository']['full_name']
     except KeyError:
-        full_name = event['body-json']['repository']['fullName']
+        try:
+            full_name = event['body-json']['repository']['fullName']
+        except KeyError:
+            full_name = event['body-json']['repository']['path_with_namespace']
     if not secure:
         logger.error('Source IP %s is not allowed' % event['context']['source-ip'])
         raise Exception('Source IP %s is not allowed' % event['context']['source-ip'])
