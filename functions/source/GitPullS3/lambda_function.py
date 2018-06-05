@@ -150,35 +150,39 @@ def lambda_handler(event, context):
                 secure = True
     # TODO: Add the ability to clone TFS repo using SSH keys
     try:
+        # GitHub
         full_name = event['body-json']['repository']['full_name']
     except KeyError:
         try:
+            # BitBucket #14
             full_name = event['body-json']['repository']['fullName']
         except KeyError:
             try:
+                # GitLab
                 full_name = event['body-json']['repository']['path_with_namespace']
             except KeyError:
+                # GitLab 8.5+
                 full_name = event['body-json']['project']['path_with_namespace']
     if not secure:
         logger.error('Source IP %s is not allowed' % event['context']['source-ip'])
         raise Exception('Source IP %s is not allowed' % event['context']['source-ip'])
 
+    # GitHub publish event
     if('action' in event['body-json'] and event['body-json']['action'] == 'published'):
         branch_name = 'tags/%s' % event['body-json']['release']['tag_name']
         repo_name = full_name + '/release'
     else:
-        try:
-            branch_name = 'master'
-            repo_name = event['body-json']['project']['path_with_namespace']
-        except:
-            branch_name = event['body-json']['ref'].replace('refs/heads/', '')
-            repo_name = full_name + '/branch/' + branch_name
+        # branch names should contain [name] only, tag names - "tags/[name]"
+        branch_name = event['body-json']['ref'].replace('refs/heads/', '').replace('refs/tags/', 'tags/')
+        repo_name = full_name
     try:
+        # GitLab
         remote_url = event['body-json']['project']['git_ssh_url']
     except Exception:
         try:
             remote_url = 'git@'+event['body-json']['repository']['links']['html']['href'].replace('https://', '').replace('/', ':', 1)+'.git'
         except:
+            # GitHub
             remote_url = event['body-json']['repository']['ssh_url']
     repo_path = '/tmp/%s' % repo_name
     creds = RemoteCallbacks(credentials=get_keys(keybucket, pubkey), )
