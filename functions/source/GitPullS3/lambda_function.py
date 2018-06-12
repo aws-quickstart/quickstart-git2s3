@@ -172,9 +172,12 @@ def lambda_handler(event, context):
         branch_name = 'tags/%s' % event['body-json']['release']['tag_name']
         repo_name = full_name + '/release'
     else:
-        # branch names should contain [name] only, tag names - "tags/[name]"
-        branch_name = event['body-json']['ref'].replace('refs/heads/', '').replace('refs/tags/', 'tags/')
         repo_name = full_name
+        try:
+            # branch names should contain [name] only, tag names - "tags/[name]"
+            branch_name = event['body-json']['ref'].replace('refs/heads/', '').replace('refs/tags/', 'tags/')
+        except:
+            branch_name = 'master'
     try:
         # GitLab
         remote_url = event['body-json']['project']['git_ssh_url']
