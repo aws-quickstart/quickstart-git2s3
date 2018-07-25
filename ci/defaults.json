@@ -22,5 +22,9 @@
     {
         "ParameterValue": "",
         "ParameterKey": "OutputBucketName"
+    },
+    {
+        "ParameterValue": "$[taskcat_autobucket]",
+        "ParameterKey": "QSS3BucketName"
     }
 ]
