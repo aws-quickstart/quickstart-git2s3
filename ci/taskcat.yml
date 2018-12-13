@@ -19,6 +19,6 @@ global:
     - us-west-2
   reporting: true
 tests:
-  defaults:
+  git2s3:
     parameter_input: defaults.json
     template_file: git2s3.template
