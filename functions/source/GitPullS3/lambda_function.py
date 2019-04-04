@@ -155,7 +155,10 @@ def lambda_handler(event, context):
         try:
             full_name = event['body-json']['repository']['fullName']
         except KeyError:
-            full_name = event['body-json']['repository']['path_with_namespace']
+            try:
+                full_name = event['body-json']['repository']['path_with_namespace']
+            except KeyError:  # BitBucket
+                full_name = event['body-json']['repository']['name']
     if not secure:
         logger.error('Source IP %s is not allowed' % event['context']['source-ip'])
         raise Exception('Source IP %s is not allowed' % event['context']['source-ip'])
@@ -179,7 +182,16 @@ def lambda_handler(event, context):
         try:
             remote_url = 'git@'+event['body-json']['repository']['links']['html']['href'].replace('https://', '').replace('/', ':', 1)+'.git'
         except:
-            remote_url = event['body-json']['repository']['ssh_url']
+            try:
+                remote_url = event['body-json']['repository']['ssh_url']
+            except:  # BitBucket
+                ssh_index = 0
+                for i, url in enumerate(event['body-json']['repository']['links']['clone']):
+                    if url['name'] == 'ssh':
+                        ssh_index = i
+
+                remote_url = event['body-json']['repository']['links']['clone'][ssh_index]['href']
+
     repo_path = '/tmp/%s' % repo_name
     creds = RemoteCallbacks(credentials=get_keys(keybucket, pubkey), )
     try:
