@@ -22,7 +22,7 @@ logger.setLevel(logging.INFO)
 logger.handlers[0].setFormatter(logging.Formatter('[%(asctime)s][%(levelname)s] %(message)s'))
 logging.getLogger('boto3').setLevel(logging.ERROR)
 logging.getLogger('botocore').setLevel(logging.ERROR)
-
+params = None
 s3_client = boto3.client('s3')
 
 
@@ -52,6 +52,7 @@ def get_members(zip):
 
 
 def lambda_handler(event, context):
+
     logger.info('Event %s', event)
     OAUTH_token = event['context']['git-token']
     OutputBucket = event['context']['output-bucket']
@@ -90,10 +91,16 @@ def lambda_handler(event, context):
         # add access token information to archive url
         archive_url = archive_url+'?access_token='+OAUTH_token
     elif hostflavour == 'gitlab':
-        # https://gitlab.com/jaymcconnell/gitlab-test-30/repository/archive.zip?ref=master
-        archive_url = event['body-json']['project']['http_url'].replace('.git', '/repository/archive.zip?ref=master')+'&private_token='+OAUTH_token
+        #https://gitlab.com/jaymcconnell/gitlab-test-30/repository/archive.zip?ref=master
+        archive_root = event['body-json']['project']['http_url'].strip('.git')
+        project_id = event['body-json']['project_id']
+        branch = event['body-json']['ref'].replace('refs/heads/', '')
+        archive_url = f"https://gitlab.com/api/v4/projects/{project_id}/repository/archive.zip"
+        params = {'private_token': OAUTH_token, 'sha': branch}
+
         owner = event['body-json']['project']['namespace']
         name = event['body-json']['project']['name']
+
     elif hostflavour == 'bitbucket':
         branch = event['body-json']['push']['changes'][0]['new']['name']
         archive_url = event['body-json']['repository']['links']['html']['href']+'/get/' + branch + '.zip'
@@ -116,7 +123,7 @@ def lambda_handler(event, context):
     s3_archive_file = "%s/%s/%s/%s.zip" % (owner, name, branch, name)
     # download the code archive via archive url
     logger.info('Downloading archive from %s' % archive_url)
-    r = requests.get(archive_url, verify=verify, headers=headers)
+    r = requests.get(archive_url, verify=verify, headers=headers, params=params)
     f = StringIO(r.content)
     zip = ZipFile(f)
     path = '/tmp/code'
