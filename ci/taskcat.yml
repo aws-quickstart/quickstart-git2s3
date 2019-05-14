@@ -18,6 +18,7 @@ global:
     - us-west-1
     - us-west-2
   reporting: true
+  package-lambda: true
 tests:
   git2s3:
     parameter_input: defaults.json
