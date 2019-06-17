@@ -143,10 +143,13 @@ def lambda_handler(event, context):
         if event['params']['header']['X-Gitlab-Token'] in apikeys:
             secure = True
     if 'X-Hub-Signature' in event['params']['header'].keys():
-        logger.info('Checking X-Hub-Signature')
         for k in apikeys:
-            k1 = hmac.new(str(k), str(event['context']['raw-body']), hashlib.sha256).hexdigest()
-            k2 = str(event['params']['header']['X-Hub-Signature'].replace('sha256=', ''))
+            if 'use-sha256' in event['context']:
+                k1 = hmac.new(str(k), str(event['context']['raw-body']), hashlib.sha256).hexdigest()
+                k2 = str(event['params']['header']['X-Hub-Signature'].replace('sha256=', ''))
+            else:
+                k1 = hmac.new(str(k), str(event['context']['raw-body']), hashlib.sha1).hexdigest()
+                k2 = str(event['params']['header']['X-Hub-Signature'].replace('sha1=', ''))
             if k1 == k2:
                 secure = True
     # TODO: Add the ability to clone TFS repo using SSH keys
@@ -156,7 +159,9 @@ def lambda_handler(event, context):
         try:
             full_name = event['body-json']['repository']['fullName']
         except KeyError:
-            full_name = event['body-json']['repository']['path_with_namespace']
+            try:
+                full_name = event['body-json']['repository']['path_with_namespace']
+            except KeyError:
                 try:
                     full_name = event['body-json']['repository']['name']
                 except KeyError:  # BitBucket pull-request
@@ -184,7 +189,9 @@ def lambda_handler(event, context):
         try:
             remote_url = 'git@'+event['body-json']['repository']['links']['html']['href'].replace('https://', '').replace('/', ':', 1)+'.git'
         except:
-            remote_url = event['body-json']['repository']['ssh_url']
+            try:
+                remote_url = event['body-json']['repository']['ssh_url']
+            except: #Bitbucket
                 try:
                     for i, url in enumerate(event['body-json']['repository']['links']['clone']):
                         if url['name'] == 'ssh':
