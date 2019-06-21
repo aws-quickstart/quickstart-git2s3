@@ -154,50 +154,61 @@ def lambda_handler(event, context):
                 secure = True
     # TODO: Add the ability to clone TFS repo using SSH keys
     try:
+        # GitHub
         full_name = event['body-json']['repository']['full_name']
     except KeyError:
         try:
+            # BitBucket #14
             full_name = event['body-json']['repository']['fullName']
         except KeyError:
             try:
+                # GitLab
                 full_name = event['body-json']['repository']['path_with_namespace']
             except KeyError:
                 try:
-                    full_name = event['body-json']['repository']['name']
-                except KeyError:  # BitBucket pull-request
-                    full_name = event['body-json']['pullRequest']['fromRef']['repository']['name']
+                    # GitLab 8.5+
+                    full_name = event['body-json']['project']['path_with_namespace']
+                except KeyError:
+                    try:
+                        # BitBucket server
+                        full_name = event['body-json']['repository']['name']
+                    except KeyError:  
+                        # BitBucket pull-request
+                        full_name = event['body-json']['pullRequest']['fromRef']['repository']['name']
     if not secure:
         logger.error('Source IP %s is not allowed' % event['context']['source-ip'])
         raise Exception('Source IP %s is not allowed' % event['context']['source-ip'])
 
+    # GitHub publish event
     if('action' in event['body-json'] and event['body-json']['action'] == 'published'):
         branch_name = 'tags/%s' % event['body-json']['release']['tag_name']
         repo_name = full_name + '/release'
     else:
+        repo_name = full_name
         try:
-            branch_name = 'master'
-            repo_name = event['body-json']['project']['path_with_namespace']
+            # branch names should contain [name] only, tag names - "tags/[name]"
+            branch_name = event['body-json']['ref'].replace('refs/heads/', '').replace('refs/tags/', 'tags/')
         except:
-            if 'ref' in event['body-json']:
-                branch_name = event['body-json']['ref'].replace('refs/heads/', '')
-            else:
-                branch_name = 'master'
-            repo_name = full_name + '/branch/' + branch_name
+            branch_name = 'master'
     try:
+        # GitLab
         remote_url = event['body-json']['project']['git_ssh_url']
     except Exception:
         try:
             remote_url = 'git@'+event['body-json']['repository']['links']['html']['href'].replace('https://', '').replace('/', ':', 1)+'.git'
         except:
             try:
+                # GitHub
                 remote_url = event['body-json']['repository']['ssh_url']
-            except: #Bitbucket
+            except: 
+                # Bitbucket
                 try:
                     for i, url in enumerate(event['body-json']['repository']['links']['clone']):
                         if url['name'] == 'ssh':
                             ssh_index = i
                     remote_url = event['body-json']['repository']['links']['clone'][ssh_index]['href']
-                except: # BitBucket pull-request
+                except: 
+                    # BitBucket pull-request
                     for i, url in enumerate(event['body-json']['pullRequest']['fromRef']['repository']['links']['clone']):
                         if url['name'] == 'ssh':
                             ssh_index = i
