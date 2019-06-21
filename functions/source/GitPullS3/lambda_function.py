@@ -145,8 +145,12 @@ def lambda_handler(event, context):
             secure = True
     if 'X-Hub-Signature' in event['params']['header'].keys():
         for k in apikeys:
-            k1 = hmac.new(str(k), str(event['context']['raw-body']), hashlib.sha1).hexdigest()
-            k2 = str(event['params']['header']['X-Hub-Signature'].replace('sha1=', ''))
+            if 'use-sha256' in event['context']:
+                k1 = hmac.new(str(k), str(event['context']['raw-body']), hashlib.sha256).hexdigest()
+                k2 = str(event['params']['header']['X-Hub-Signature'].replace('sha256=', ''))
+            else:
+                k1 = hmac.new(str(k), str(event['context']['raw-body']), hashlib.sha1).hexdigest()
+                k2 = str(event['params']['header']['X-Hub-Signature'].replace('sha1=', ''))
             if k1 == k2:
                 secure = True
     # TODO: Add the ability to clone TFS repo using SSH keys
@@ -162,8 +166,16 @@ def lambda_handler(event, context):
                 # GitLab
                 full_name = event['body-json']['repository']['path_with_namespace']
             except KeyError:
-                # GitLab 8.5+
-                full_name = event['body-json']['project']['path_with_namespace']
+                try:
+                    # GitLab 8.5+
+                    full_name = event['body-json']['project']['path_with_namespace']
+                except KeyError:
+                    try:
+                        # BitBucket server
+                        full_name = event['body-json']['repository']['name']
+                    except KeyError:  
+                        # BitBucket pull-request
+                        full_name = event['body-json']['pullRequest']['fromRef']['repository']['name']
     if not secure:
         logger.error('Source IP %s is not allowed' % event['context']['source-ip'])
         raise Exception('Source IP %s is not allowed' % event['context']['source-ip'])
@@ -186,8 +198,23 @@ def lambda_handler(event, context):
         try:
             remote_url = 'git@'+event['body-json']['repository']['links']['html']['href'].replace('https://', '').replace('/', ':', 1)+'.git'
         except:
-            # GitHub
-            remote_url = event['body-json']['repository']['ssh_url']
+            try:
+                # GitHub
+                remote_url = event['body-json']['repository']['ssh_url']
+            except: 
+                # Bitbucket
+                try:
+                    for i, url in enumerate(event['body-json']['repository']['links']['clone']):
+                        if url['name'] == 'ssh':
+                            ssh_index = i
+                    remote_url = event['body-json']['repository']['links']['clone'][ssh_index]['href']
+                except: 
+                    # BitBucket pull-request
+                    for i, url in enumerate(event['body-json']['pullRequest']['fromRef']['repository']['links']['clone']):
+                        if url['name'] == 'ssh':
+                            ssh_index = i
+
+                    remote_url = event['body-json']['pullRequest']['fromRef']['repository']['links']['clone'][ssh_index]['href']
     repo_path = '/tmp/%s' % repo_name
     creds = RemoteCallbacks(credentials=get_keys(keybucket, pubkey), )
     try:
