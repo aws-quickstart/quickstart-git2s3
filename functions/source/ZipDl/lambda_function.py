@@ -95,7 +95,7 @@ def lambda_handler(event, context):
         archive_root = event['body-json']['project']['http_url'].strip('.git')
         project_id = event['body-json']['project_id']
         branch = event['body-json']['ref'].replace('refs/heads/', '')
-        archive_url = f"https://gitlab.com/api/v4/projects/{project_id}/repository/archive.zip"
+        archive_url = "https://gitlab.com/api/v4/projects/{}/repository/archive.zip".format(project_id)
         params = {'private_token': OAUTH_token, 'sha': branch}
 
         owner = event['body-json']['project']['namespace']
