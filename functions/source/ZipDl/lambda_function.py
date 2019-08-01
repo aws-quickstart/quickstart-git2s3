@@ -53,6 +53,7 @@ def get_members(zip):
 
 def lambda_handler(event, context):
 
+    params = None
     logger.info('Event %s', event)
     OAUTH_token = event['context']['git-token']
     OutputBucket = event['context']['output-bucket']
