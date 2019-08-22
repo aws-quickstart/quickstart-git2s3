@@ -134,9 +134,6 @@ def lambda_handler(event, context):
     for net in ipranges:
         if ip in net:
             secure = True
-    if 'X-Gitlab-Token' in event['params']['header'].keys():
-        if event['params']['header']['X-Gitlab-Token'] in apikeys:
-            secure = True
     if 'X-Git-Token' in event['params']['header'].keys():
         if event['params']['header']['X-Git-Token'] in apikeys:
             secure = True
