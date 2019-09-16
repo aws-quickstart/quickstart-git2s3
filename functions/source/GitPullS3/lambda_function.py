@@ -111,8 +111,8 @@ def zip_repo(repo_path, repo_name):
     return '/tmp/'+repo_name.replace('/', '_')+'.zip'
 
 
-def push_s3(filename, repo_name, outputbucket):
-    s3key = '%s/%s' % (repo_name, filename.replace('/tmp/', ''))
+def push_s3(filename, repo_name, branch_name, outputbucket):
+    s3key = '%s/%s/%s' % (repo_name, branch_name, filename.replace('/tmp/', ''))
     logger.info('pushing zip to s3://%s/%s' % (outputbucket, s3key))
     data = open(filename, 'rb')
     s3.put_object(Bucket=outputbucket, Body=data, Key=s3key)
@@ -226,7 +226,7 @@ def lambda_handler(event, context):
         repo = create_repo(repo_path, remote_url, creds)
     pull_repo(repo, branch_name, remote_url, creds)
     zipfile = zip_repo(repo_path, repo_name)
-    push_s3(zipfile, repo_name, outputbucket)
+    push_s3(zipfile, repo_name, branch_name, outputbucket)
     if cleanup:
         logger.info('Cleanup Lambda container...')
         shutil.rmtree(repo_path)
