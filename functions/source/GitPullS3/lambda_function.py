@@ -173,7 +173,7 @@ def lambda_handler(event, context):
                     try:
                         # BitBucket server
                         full_name = event['body-json']['repository']['name']
-                    except KeyError:  
+                    except KeyError:
                         # BitBucket pull-request
                         full_name = event['body-json']['pullRequest']['fromRef']['repository']['name']
     if not secure:
@@ -189,8 +189,12 @@ def lambda_handler(event, context):
         try:
             # branch names should contain [name] only, tag names - "tags/[name]"
             branch_name = event['body-json']['ref'].replace('refs/heads/', '').replace('refs/tags/', 'tags/')
-        except:
-            branch_name = 'master'
+        except KeyError:
+            try:
+                # Bibucket server
+                branch_name = event['body-json']['push']['changes'][0]['new']['name']
+            except:
+                branch_name = 'master'
     try:
         # GitLab
         remote_url = event['body-json']['project']['git_ssh_url']
@@ -201,14 +205,14 @@ def lambda_handler(event, context):
             try:
                 # GitHub
                 remote_url = event['body-json']['repository']['ssh_url']
-            except: 
+            except:
                 # Bitbucket
                 try:
                     for i, url in enumerate(event['body-json']['repository']['links']['clone']):
                         if url['name'] == 'ssh':
                             ssh_index = i
                     remote_url = event['body-json']['repository']['links']['clone'][ssh_index]['href']
-                except: 
+                except:
                     # BitBucket pull-request
                     for i, url in enumerate(event['body-json']['pullRequest']['fromRef']['repository']['links']['clone']):
                         if url['name'] == 'ssh':
@@ -234,4 +238,3 @@ def lambda_handler(event, context):
         os.remove('/tmp/id_rsa')
         os.remove('/tmp/id_rsa.pub')
     return 'Successfully updated %s' % repo_name
-
