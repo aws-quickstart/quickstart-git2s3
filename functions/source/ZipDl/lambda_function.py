@@ -13,6 +13,8 @@ import os
 import shutil
 from zipfile import ZipFile
 from cStringIO import StringIO
+from urlparse import urlparse
+import base64
 
 # Set to False to allow self-signed/invalid ssl certificates
 verify = False
@@ -52,7 +54,6 @@ def get_members(zip):
 
 
 def lambda_handler(event, context):
-
     params = None
     logger.info('Event %s', event)
     OAUTH_token = event['context']['git-token']
@@ -69,9 +70,11 @@ def lambda_handler(event, context):
             hostflavour = 'bitbucket'
         elif event['params']['header']['User-Agent'].startswith('GitHub-Hookshot'):
             hostflavour = 'github'
+        elif 'Bitbucket-' in event['params']['header']['User-Agent']:
+            hostflavour = 'bitbucket-server'
     elif event['body-json']['publisherId'] == 'tfs':
         hostflavour='tfs'
-    
+
     headers = {}
     branch = 'master'
     if hostflavour == 'githubent':
@@ -120,8 +123,34 @@ def lambda_handler(event, context):
         headers['Authorization'] = 'Basic %s' % pat_in_base64
         headers['Authorization'] = headers['Authorization'].replace('\n','')
         headers['Accept'] = 'application/zip'
+    elif hostflavour == 'bitbucket-server':
+        clone_urls = event['body-json']['repository']['links']['clone']
+        http_clone_url = None
+        for clone_url in clone_urls:
+            if clone_url.get('name') == "http":
+                http_clone_url = clone_url.get('href')
+        if http_clone_url is None:
+            raise Exception("Could not find http clone url from the webhook payload")
 
-    s3_archive_file = "%s/%s/%s/%s.zip" % (owner, name, branch, name)
+        if len(event['body-json']['changes']) != 1:
+            raise Exception("Could not handle the number of changes")
+        change = event['body-json']['changes'][0]
+        url_parts = urlparse(http_clone_url)
+        owner = event['body-json']['repository']['project']['name']
+        name = event['body-json']['repository']['name']
+        archive_url = "{scheme}://{netloc}/rest/api/latest/projects/{project}/repos/{repo}/archive?at={hash}&format=zip".format(
+            scheme=url_parts.scheme,
+            netloc=url_parts.netloc,
+            project=owner,
+            repo=name,
+            hash=change['toHash'],
+        )
+        branch = change['refId'].replace('refs/heads/', '')
+        secret = base64.b64encode(
+            ":".join([event['context']['oauth-key'], event['context']['oauth-secret']])
+        )
+        headers['Authorization'] = 'Basic ' + secret
+
     # download the code archive via archive url
     logger.info('Downloading archive from %s' % archive_url)
     r = requests.get(archive_url, verify=verify, headers=headers, params=params)
@@ -140,6 +169,7 @@ def lambda_handler(event, context):
     zip.extractall(path, get_members(zip))
 
     # Create zip from /tmp dir without any common preffixes
+    s3_archive_file = "%s/%s/%s/%s.zip" % (owner, name, branch, name)
     shutil.make_archive(zipped_code, 'zip', path)
     logger.info("Uploading zip to S3://%s/%s" % (OutputBucket, s3_archive_file))
     s3_client.upload_file(zipped_code + '.zip', OutputBucket, s3_archive_file)
