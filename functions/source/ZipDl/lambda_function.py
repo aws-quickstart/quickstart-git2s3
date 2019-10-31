@@ -135,8 +135,6 @@ def lambda_handler(event, context):
         if len(event['body-json']['changes']) != 1:
             raise Exception("Could not handle the number of changes")
         change = event['body-json']['changes'][0]
-
-        print "http_clone_url is " + http_clone_url
         url_parts = urlparse(http_clone_url)
         owner = event['body-json']['repository']['project']['name']
         name = event['body-json']['repository']['name']
