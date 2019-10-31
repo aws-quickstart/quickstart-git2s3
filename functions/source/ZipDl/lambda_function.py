@@ -14,7 +14,6 @@ import shutil
 from zipfile import ZipFile
 from cStringIO import StringIO
 from urlparse import urlparse
-import json
 import base64
 
 # Set to False to allow self-signed/invalid ssl certificates
@@ -55,7 +54,6 @@ def get_members(zip):
 
 
 def lambda_handler(event, context):
-    print json.dumps(event)
     params = None
     logger.info('Event %s', event)
     OAUTH_token = event['context']['git-token']
