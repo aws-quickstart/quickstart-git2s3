@@ -140,7 +140,7 @@ def lambda_handler(event, context):
         name = event['body-json']['repository']['name']
         archive_url = "{scheme}://{netloc}/rest/api/latest/projects/{project}/repos/{repo}/archive?at={hash}&format=zip".format(
             scheme=url_parts.scheme,
-            netloc=url_parts.netloc,
+            netloc=url_parts.netloc if os.environ.get("SCM_HOSTNAME_OVERRIDE", '') == '' else  os.environ.get("SCM_HOSTNAME_OVERRIDE"),
             project=owner,
             repo=name,
             hash=change['toHash'],

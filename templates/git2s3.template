@@ -98,14 +98,14 @@
             "ConstraintDescription": "this token must be generated from the git server/provider"
         },
         "OauthKey": {
-            "Description": "zipdl method only. OAuth2 Key needed for BitBucket",
+            "Description": "zipdl method only. OAuth2 Key needed for BitBucket.  For bitbucket server this should be a username.",
             "Type": "String",
             "Default": "",
             "ConstraintDescription": "this key must be generated from the git server/provider"
         },
         "OauthSecret": {
             "NoEcho": "true",
-            "Description": "zipdl method only. OAuth2 Secret needed for BitBucket",
+            "Description": "zipdl method only. OAuth2 Secret needed for BitBucket. For bitbucket server this should be a password.",
             "Type": "String",
             "Default": "",
             "ConstraintDescription": "this secret must be generated from the git server/provider"
@@ -128,6 +128,26 @@
             "Default": "quickstart-git2s3/",
             "Description": "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).",
             "Type": "String"
+        },
+        "VPCId": {
+            "Description": "Id of the VPC the DL Zip lambda should run in",
+            "Type": "AWS::EC2::VPC::Id",
+            "Default": ""
+        },
+        "VPCCidrRange": {
+            "Description": "CIDR range of the VPC",
+            "Type": "String",
+            "Default": ""
+        },
+        "SubnetIds": {
+            "Description": "SubnetIds the DL Zip lambda should run in",
+            "Type": "List<AWS::EC2::Subnet::Id>",
+            "Default": ""
+        },
+        "ScmHostnameOverride": {
+            "Description": "Hostname to override the incoming json request with",
+            "Type": "String",
+            "Default": ""
         }
     },
     "Conditions": {
@@ -214,6 +234,11 @@
                     ]
                 }
             ]
+        },
+        "ShouldRunInVPC":{
+          "Fn::Not": [{
+            "Fn::Equals": [{"Ref": "VPCId"}, ""]
+          }]
         }
     },
     "Resources": {
@@ -906,7 +931,7 @@
                 "Runtime": "python2.7",
                 "Timeout": "300",
                 "Environment": {
-                    "Variables": 
+                    "Variables":
                         { "ExcludeGit":"True" }
                 },
                 "Code": {
@@ -922,6 +947,7 @@
         "ZipDlRole": {
             "Type": "AWS::IAM::Role",
             "Properties": {
+                "ManagedPolicyArns": [ "arn:aws:iam::aws:policy/service-role/AWSLambdaENIManagementAccess" ],
                 "AssumeRolePolicyDocument": {
                     "Statement": [
                         {
@@ -991,8 +1017,28 @@
                 ]
             }
         },
+        "ZipDlLambdaSecurityGroup": {
+          "Type": "AWS::EC2::SecurityGroup",
+          "Properties": {
+            "GroupDescription": "Security Group to allow the lambda to access the git service",
+            "GroupName": "ZipDlLambdaSecurityGroup",
+            "SecurityGroupEgress": [ {
+                                       "CidrIp": {"Ref": "VPCCidrRange"},
+                                       "FromPort": -1,
+                                       "IpProtocol": 'tcp',
+                                       "ToPort": -1
+                                     } ],
+            "SecurityGroupIngress": [ {
+                                        "CidrIp": {"Ref": "VPCCidrRange"},
+                                        "FromPort": -1,
+                                        "IpProtocol": 'tcp',
+                                        "ToPort": -1
+                                      } ],
+            "VpcId": {"Ref": "VPCId"}
+          }
+        },
         "ZipDlLambda": {
-            "DependsOn": "CopyZips",
+          "DependsOn": "CopyZips",
             "Type": "AWS::Lambda::Function",
             "Properties": {
                 "Handler": "lambda_function.lambda_handler",
@@ -1012,7 +1058,24 @@
                 },
                 "Runtime": "python2.7",
                 "MemorySize": 128,
-                "Timeout": 30
+                "Timeout": 30,
+                "VpcConfig": {
+                  "Fn::If": [
+                    "ShouldRunInVPC",
+                    {
+                      "SecurityGroupIds": [
+                        { "Ref" : "ZipDlLambdaSecurityGroup"}
+                      ],
+                      "SubnetIds": { "Ref" : "SubnetIds"},
+                    },
+                    {
+                      "Ref": "AWS::NoValue"
+                    }
+                  ]
+                },
+                "Environment": {
+                  "Variables": { "SCM_HOSTNAME_OVERRIDE": {"Ref": "ScmHostnameOverride" }}
+                }
             }
         },
         "WebHookRole": {
