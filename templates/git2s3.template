@@ -131,7 +131,7 @@
         },
         "VPCId": {
             "Description": "Id of the VPC the DL Zip lambda should run in",
-            "Type": "AWS::EC2::VPC::Id",
+            "Type": "String",
             "Default": ""
         },
         "VPCCidrRange": {
@@ -141,7 +141,7 @@
         },
         "SubnetIds": {
             "Description": "SubnetIds the DL Zip lambda should run in",
-            "Type": "List<AWS::EC2::Subnet::Id>",
+            "Type": "CommaDelimitedList",
             "Default": ""
         },
         "ScmHostnameOverride": {
@@ -1018,6 +1018,7 @@
             }
         },
         "ZipDlLambdaSecurityGroup": {
+          "Condition": "ShouldRunInVPC",
           "Type": "AWS::EC2::SecurityGroup",
           "Properties": {
             "GroupDescription": "Security Group to allow the lambda to access the git service",
