@@ -1025,15 +1025,15 @@
             "GroupName": "ZipDlLambdaSecurityGroup",
             "SecurityGroupEgress": [ {
                                        "CidrIp": {"Ref": "VPCCidrRange"},
-                                       "FromPort": -1,
+                                       "FromPort": 0,
                                        "IpProtocol": 'tcp',
-                                       "ToPort": -1
+                                       "ToPort": 65535
                                      } ],
             "SecurityGroupIngress": [ {
                                         "CidrIp": {"Ref": "VPCCidrRange"},
-                                        "FromPort": -1,
+                                        "FromPort": 0,
                                         "IpProtocol": 'tcp',
-                                        "ToPort": -1
+                                        "ToPort": 65535
                                       } ],
             "VpcId": {"Ref": "VPCId"}
           }
