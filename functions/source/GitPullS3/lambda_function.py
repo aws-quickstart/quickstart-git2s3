@@ -190,6 +190,8 @@ def lambda_handler(event, context):
             try:
                 # Bibucket server
                 branch_name = event['body-json']['push']['changes'][0]['new']['name']
+                if(event['body-json']['push']['changes'][0]['new']['type'] == 'tag'):
+                    branch_name = 'tags/'+event['body-json']['push']['changes'][0]['new']['name']
             except:
                 branch_name = 'master'
     try:
