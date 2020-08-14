@@ -193,7 +193,11 @@ def lambda_handler(event, context):
                 if(event['body-json']['push']['changes'][0]['new']['type'] == 'tag'):
                     branch_name = 'tags/'+event['body-json']['push']['changes'][0]['new']['name']
             except:
-                branch_name = 'master'
+                # Bitbucket Server v6.6.1
+                try:
+                    branch_name = event['body-json']['changes'][0]['ref']['displayId']
+                except:
+                    branch_name = 'master'
     try:
         # GitLab
         remote_url = event['body-json']['project']['git_ssh_url']
