@@ -36,21 +36,25 @@ kms = client('kms')
 
 
 def lambda_handler(event, context):
+    print(event)
     keybucket = event['context']['key-bucket']
     outputbucket = event['context']['output-bucket']
     pubkey = event['context']['public-key']
     # Source IP ranges to allow requests from, if the IP is in one of these the request will not be chacked for an api key
     ipranges = []
-    for i in event['context']['allowed-ips'].split(','):
-        ipranges.append(ip_network(u'%s' % i))
+    if event['context']['allowed-ips']:
+        for i in event['context']['allowed-ips'].split(','):
+            ipranges.append(ip_network(u'%s' % i))
     # APIKeys, it is recommended to use a different API key for each repo that uses this function
     apikeys = event['context']['api-secrets'].split(',')
     ip = ip_address(event['context']['source-ip'])
     secure = False
-    for net in ipranges:
-        if ip in net:
-            secure = True
+    if ipranges:
+        for net in ipranges:
+            if ip in net:
+                secure = True
     if 'X-Git-Token' in event['params']['header'].keys():
+        print (event['params']['header']['X-Git-Token'])
         if event['params']['header']['X-Git-Token'] in apikeys:
             secure = True
     if 'X-Gitlab-Token' in event['params']['header'].keys():
@@ -59,10 +63,10 @@ def lambda_handler(event, context):
     if 'X-Hub-Signature' in event['params']['header'].keys():
         for k in apikeys:
             if 'use-sha256' in event['context']:
-                k1 = hmac.new(str(k), str(event['context']['raw-body']), hashlib.sha256).hexdigest()
+                k1 = hmac.new(str(k).encode('utf-8'), str(event['context']['raw-body']).encode('utf-8'), hashlib.sha256).hexdigest()
                 k2 = str(event['params']['header']['X-Hub-Signature'].replace('sha256=', ''))
             else:
-                k1 = hmac.new(str(k), str(event['context']['raw-body']), hashlib.sha1).hexdigest()
+                k1 = hmac.new(str(k).encode('utf-8'), str(event['context']['raw-body']).encode('utf-8'), hashlib.sha1).hexdigest()
                 k2 = str(event['params']['header']['X-Hub-Signature'].replace('sha1=', ''))
             if k1 == k2:
                 secure = True

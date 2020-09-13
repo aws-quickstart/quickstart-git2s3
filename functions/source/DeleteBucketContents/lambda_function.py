@@ -14,13 +14,13 @@ def lambda_handler(event,context):
         if event['RequestType'] == 'Delete':
             s3 = boto3.client('s3')
             # Delete KeyBucket contents
-            print 'Getting KeyBucket objects...'
+            print ('Getting KeyBucket objects...')
             s3objects = s3.list_objects_v2(Bucket=event["ResourceProperties"]["KeyBucket"])
             if 'Contents' in s3objects.keys():
-                print 'Deleting KeyBucket objects %s...' % str([{'Key':key['Key']} for key in s3objects['Contents']])
+                print ('Deleting KeyBucket objects %s...' % str([{'Key':key['Key']} for key in s3objects['Contents']]))
                 s3.delete_objects(Bucket=event["ResourceProperties"]["KeyBucket"],Delete={'Objects':[{'Key':key['Key']} for key in s3objects['Contents']]})
             # Delete Output bucket contents and versions
-            print 'Getting OutputBucket objects...'
+            print ('Getting OutputBucket objects...')
             objects=[]
             versions=s3.list_object_versions(Bucket=event["ResourceProperties"]["OutputBucket"])
             while versions:
@@ -38,5 +38,5 @@ def lambda_handler(event,context):
                 s3.delete_objects(Bucket=event["ResourceProperties"]["OutputBucket"],Delete={'Objects':objects})
         cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, '')
     except:
-        print traceback.print_exc()
+        print (traceback.print_exc())
         cfnresponse.send(event, context, cfnresponse.FAILED, {}, '')

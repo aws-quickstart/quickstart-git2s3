@@ -7,7 +7,9 @@ from __future__ import absolute_import, division, print_function
 import collections
 import threading
 import types
+import warnings
 
+import cryptography
 from cryptography import utils
 from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings._openssl import ffi, lib
@@ -50,19 +52,31 @@ def _consume_errors(lib):
     return errors
 
 
-def _openssl_assert(lib, ok):
+def _errors_with_text(errors):
+    errors_with_text = []
+    for err in errors:
+        buf = ffi.new("char[]", 256)
+        lib.ERR_error_string_n(err.code, buf, len(buf))
+        err_text_reason = ffi.string(buf)
+
+        errors_with_text.append(
+            _OpenSSLErrorWithText(
+                err.code, err.lib, err.func, err.reason, err_text_reason
+            )
+        )
+
+    return errors_with_text
+
+
+def _consume_errors_with_text(lib):
+    return _errors_with_text(_consume_errors(lib))
+
+
+def _openssl_assert(lib, ok, errors=None):
     if not ok:
-        errors = _consume_errors(lib)
-        errors_with_text = []
-        for err in errors:
-            err_text_reason = ffi.string(
-                lib.ERR_error_string(err.code, ffi.NULL)
-            )
-            errors_with_text.append(
-                _OpenSSLErrorWithText(
-                    err.code, err.lib, err.func, err.reason, err_text_reason
-                )
-            )
+        if errors is None:
+            errors = _consume_errors(lib)
+        errors_with_text = _errors_with_text(errors)
 
         raise InternalError(
             "Unknown OpenSSL error. This error is commonly encountered when "
@@ -72,7 +86,7 @@ def _openssl_assert(lib, ok):
             "please file an issue at https://github.com/pyca/cryptography/"
             "issues with information on how to reproduce "
             "this. ({0!r})".format(errors_with_text),
-            errors_with_text
+            errors_with_text,
         )
 
 
@@ -95,6 +109,7 @@ class Binding(object):
     """
     OpenSSL API wrapper.
     """
+
     lib = None
     ffi = ffi
     _lib_loaded = False
@@ -112,10 +127,9 @@ class Binding(object):
         # reliably clear the error queue. Once we clear it here we will
         # error on any subsequent unexpected item in the stack.
         cls.lib.ERR_clear_error()
-        cls._osrandom_engine_id = cls.lib.Cryptography_osrandom_engine_id
-        cls._osrandom_engine_name = cls.lib.Cryptography_osrandom_engine_name
-        result = cls.lib.Cryptography_add_osrandom_engine()
-        _openssl_assert(cls.lib, result in (1, 2))
+        if cls.lib.CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE:
+            result = cls.lib.Cryptography_add_osrandom_engine()
+            _openssl_assert(cls.lib, result in (1, 2))
 
     @classmethod
     def _ensure_ffi_initialized(cls):
@@ -139,14 +153,53 @@ class Binding(object):
             # the setup for this.
             __import__("_ssl")
 
-            if cls.lib.CRYPTO_get_locking_callback() != cls.ffi.NULL:
+            if (
+                not cls.lib.Cryptography_HAS_LOCKING_CALLBACKS
+                or cls.lib.CRYPTO_get_locking_callback() != cls.ffi.NULL
+            ):
                 return
 
             # If nothing else has setup a locking callback already, we set up
             # our own
-            res = lib._setup_ssl_threads()
+            res = lib.Cryptography_setup_ssl_threads()
             _openssl_assert(cls.lib, res == 1)
 
+
+def _verify_openssl_version(lib):
+    if (
+        lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+        and not lib.CRYPTOGRAPHY_IS_LIBRESSL
+    ):
+        warnings.warn(
+            "OpenSSL version 1.0.2 is no longer supported by the OpenSSL "
+            "project, please upgrade. The next version of cryptography will "
+            "drop support for it.",
+            utils.CryptographyDeprecationWarning,
+        )
+
+
+def _verify_package_version(version):
+    # Occasionally we run into situations where the version of the Python
+    # package does not match the version of the shared object that is loaded.
+    # This may occur in environments where multiple versions of cryptography
+    # are installed and available in the python path. To avoid errors cropping
+    # up later this code checks that the currently imported package and the
+    # shared object that were loaded have the same version and raise an
+    # ImportError if they do not
+    so_package_version = ffi.string(lib.CRYPTOGRAPHY_PACKAGE_VERSION)
+    if version.encode("ascii") != so_package_version:
+        raise ImportError(
+            "The version of cryptography does not match the loaded "
+            "shared object. This can happen if you have multiple copies of "
+            "cryptography installed in your Python path. Please try creating "
+            "a new virtual environment to resolve this issue. "
+            "Loaded python version: {}, shared object version: {}".format(
+                version, so_package_version
+            )
+        )
+
+
+_verify_package_version(cryptography.__version__)
 
 # OpenSSL is not thread safe until the locks are initialized. We call this
 # method in module scope so that it executes with the import lock. On
@@ -154,3 +207,5 @@ class Binding(object):
 # condition registering the OpenSSL locks. On Python 3.4+ the import lock
 # is per module so this approach will not work.
 Binding.init_static_locks()
+
+_verify_openssl_version(Binding.lib)

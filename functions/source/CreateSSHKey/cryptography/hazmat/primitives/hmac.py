@@ -6,20 +6,23 @@ from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
 from cryptography.exceptions import (
-    AlreadyFinalized, UnsupportedAlgorithm, _Reasons
+    AlreadyFinalized,
+    UnsupportedAlgorithm,
+    _Reasons,
 )
+from cryptography.hazmat.backends import _get_backend
 from cryptography.hazmat.backends.interfaces import HMACBackend
-from cryptography.hazmat.primitives import hashes, mac
+from cryptography.hazmat.primitives import hashes
 
 
-@utils.register_interface(mac.MACContext)
 @utils.register_interface(hashes.HashContext)
 class HMAC(object):
-    def __init__(self, key, algorithm, backend, ctx=None):
+    def __init__(self, key, algorithm, backend=None, ctx=None):
+        backend = _get_backend(backend)
         if not isinstance(backend, HMACBackend):
             raise UnsupportedAlgorithm(
                 "Backend object does not implement HMACBackend.",
-                _Reasons.BACKEND_MISSING_INTERFACE
+                _Reasons.BACKEND_MISSING_INTERFACE,
             )
 
         if not isinstance(algorithm, hashes.HashAlgorithm):
@@ -38,8 +41,7 @@ class HMAC(object):
     def update(self, data):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
-        if not isinstance(data, bytes):
-            raise TypeError("data must be bytes.")
+        utils._check_byteslike("data", data)
         self._ctx.update(data)
 
     def copy(self):
@@ -49,7 +51,7 @@ class HMAC(object):
             self._key,
             self.algorithm,
             backend=self._backend,
-            ctx=self._ctx.copy()
+            ctx=self._ctx.copy(),
         )
 
     def finalize(self):
@@ -60,8 +62,7 @@ class HMAC(object):
         return digest
 
     def verify(self, signature):
-        if not isinstance(signature, bytes):
-            raise TypeError("signature must be bytes.")
+        utils._check_bytes("signature", signature)
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
 
