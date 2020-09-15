@@ -9,18 +9,6 @@
     },
     {
         "ParameterValue": "",
-        "ParameterKey": "GitToken"
-    },
-    {
-        "ParameterValue": "",
-        "ParameterKey": "OauthKey"
-    },
-    {
-        "ParameterValue": "",
-        "ParameterKey": "OauthSecret"
-    },
-    {
-        "ParameterValue": "",
         "ParameterKey": "OutputBucketName"
     },
     {
