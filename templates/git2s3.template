@@ -14,12 +14,7 @@ Metadata:
         Parameters:
           - ApiSecret
           - AllowedIps
-      - Label:
-          default: Zip Download Settings
-        Parameters:
-          - GitToken
-          - OauthKey
-          - OauthSecret
+          - ExcludeGit
       - Label:
           default: AWS Quick Start Configuration
         Parameters:
@@ -33,12 +28,6 @@ Metadata:
         default: API Secret
       CustomDomainName:
         default: Custom Domain Name
-      GitToken:
-        default: Git Personal Access Token
-      OauthKey:
-        default: OAuth2 Key
-      OauthSecret:
-        default: OAuth2 Secret
       OutputBucketName:
         default: Output S3 Bucket Name
       QSS3BucketName:
@@ -65,26 +54,6 @@ Parameters:
       API Gateway will create a domain name for you
     Type: String
     Default: ''
-  GitToken:
-    NoEcho: 'true'
-    Description: zipdl method only. Personal access token, needed for GitHub Enterprise
-      and GitLab
-    Type: String
-    Default: ''
-    ConstraintDescription: this token must be generated from the git server/provider
-  OauthKey:
-    Description: zipdl method only. OAuth2 Key needed for BitBucket.  For bitbucket
-      server this should be a username.
-    Type: String
-    Default: ''
-    ConstraintDescription: this key must be generated from the git server/provider
-  OauthSecret:
-    NoEcho: 'true'
-    Description: zipdl method only. OAuth2 Secret needed for BitBucket. For bitbucket
-      server this should be a password.
-    Type: String
-    Default: ''
-    ConstraintDescription: this secret must be generated from the git server/provider
   OutputBucketName:
     Description: 'OPTIONAL: Bucket Name where the zip file output should be placed,
       if left blank a bucket name will be automatically generated.'
@@ -129,6 +98,12 @@ Parameters:
     Description: Hostname to override the incoming json request with
     Type: String
     Default: ''
+  ExcludeGit:
+    Description: Choose True to include the .git directory in the zip file or false to not include
+    Type: String
+    Default: 'True'
+    AllowedValues: ['True', 'False']
+
 Conditions:
   UseAllowedIps: !Not
     - !Equals
@@ -142,18 +117,6 @@ Conditions:
     - !Equals
       - !Ref 'CustomDomainName'
       - ''
-  UseGitToken: !Not
-    - !Equals
-      - !Ref 'GitToken'
-      - ''
-  UseOauthKey: !Not
-    - !Equals
-      - !Ref 'OauthKey'
-      - ''
-  UseOauthSecret: !Not
-    - !Equals
-      - !Ref 'OauthSecret'
-      - ''
   AutoGenOutputBucketName: !Not
     - !Equals
       - !Ref 'OutputBucketName'
@@ -163,11 +126,13 @@ Conditions:
       - !Ref 'VPCId'
       - ''
   UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-quickstart']
+
 Resources:
   LambdaZipsBucket:
     Type: AWS::S3::Bucket
     Properties:
       Tags: []
+
   CopyZips:
     Type: AWS::CloudFormation::CustomResource
     Properties:
@@ -180,6 +145,8 @@ Resources:
         - functions/packages/DeleteBucketContents/lambda.zip
         - functions/packages/GitPullS3/lambda.zip
         - functions/packages/ZipDl/lambda.zip
+        - functions/packages/CustomActionLambda/lambda.zip
+
   CopyZipsRole:
     Type: AWS::IAM::Role
     Properties:
@@ -210,12 +177,18 @@ Resources:
                   - s3:DeleteObject
                 Resource:
                   - !Sub 'arn:aws:s3:::${LambdaZipsBucket}/${QSS3KeyPrefix}*'
+              - Effect: Allow
+                Action:
+                  - s3:*
+                Resource:
+                  - '*'
+
   CopyZipsFunction:
     Type: AWS::Lambda::Function
     Properties:
       Description: Copies objects from a source S3 bucket to a destination
       Handler: index.handler
-      Runtime: python2.7
+      Runtime: python3.7
       Role: !GetAtt 'CopyZipsRole.Arn'
       Timeout: 240
       Code:
@@ -277,10 +250,12 @@ Resources:
             - '        timer.cancel()'
             - '        cfnresponse.send(event, context, status, {}, None)'
             - ''
+
   KeyBucket:
     Type: AWS::S3::Bucket
     Properties:
       Tags: []
+
   OutputBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -291,6 +266,7 @@ Resources:
       VersioningConfiguration:
         Status: Enabled
       Tags: []
+
   KMSKey:
     Type: AWS::KMS::Key
     Properties:
@@ -355,6 +331,7 @@ Resources:
             Condition:
               Bool:
                 kms:GrantIsForAWSResource: true
+  
   CreateSSHKeyRole:
     Type: AWS::IAM::Role
     Properties:
@@ -401,6 +378,7 @@ Resources:
                   - logs:PutLogEvents
                 Resource:
                   - arn:aws:logs:*:*:*
+  
   CreateSSHKeyLambda:
     DependsOn: CopyZips
     Type: AWS::Lambda::Function
@@ -408,11 +386,12 @@ Resources:
       Handler: lambda_function.lambda_handler
       MemorySize: '128'
       Role: !GetAtt 'CreateSSHKeyRole.Arn'
-      Runtime: python2.7
+      Runtime: python3.8
       Timeout: '300'
       Code:
         S3Bucket: !Ref 'LambdaZipsBucket'
         S3Key: !Sub '${QSS3KeyPrefix}functions/packages/CreateSSHKey/lambda.zip'
+  
   CreateSSHKey:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
@@ -421,6 +400,7 @@ Resources:
       KeyBucket: !Ref 'KeyBucket'
       Region: !Ref 'AWS::Region'
       KMSKey: !Ref 'KMSKey'
+  
   DeleteBucketContentsRole:
     Type: AWS::IAM::Role
     Properties:
@@ -466,6 +446,7 @@ Resources:
                   - logs:PutLogEvents
                 Resource:
                   - arn:aws:logs:*:*:*
+  
   DeleteBucketContentsLambda:
     DependsOn: CopyZips
     Type: AWS::Lambda::Function
@@ -473,11 +454,12 @@ Resources:
       Handler: lambda_function.lambda_handler
       MemorySize: '128'
       Role: !GetAtt 'DeleteBucketContentsRole.Arn'
-      Runtime: python2.7
+      Runtime: python3.8
       Timeout: '300'
       Code:
         S3Bucket: !Ref 'LambdaZipsBucket'
         S3Key: !Sub '${QSS3KeyPrefix}functions/packages/DeleteBucketContents/lambda.zip'
+  
   DeleteBucketContents:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
@@ -488,6 +470,91 @@ Resources:
       ServiceToken: !GetAtt 'DeleteBucketContentsLambda.Arn'
       KeyBucket: !Ref 'KeyBucket'
       OutputBucket: !Ref 'OutputBucket'
+
+  CodeBuildServiceRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+          - Effect: "Allow"
+            Principal:
+                Service: "codebuild.amazonaws.com" 
+            Action: 
+                - "sts:AssumeRole"
+        Path: "/"
+        ManagedPolicyArns:
+          - !Ref CodeBuildEndpointPolicy
+        Tags: 
+          -
+              Key: 'tagging-policy'
+              Value: !Join ['-', ["test", "ok"]]
+
+  CodeBuildBasePolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+        Description: Policy with base permissions for CodeBuild
+        Path: /
+        Roles: 
+          - !Ref CodeBuildServiceRole
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+          - Effect: "Allow"
+            Action: 
+                - "logs:CreateLogGroup"
+                - "logs:PutLogEvents"
+                - "logs:CreateLogStream"
+            Resource:
+                - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/*"
+          - Effect: "Allow"
+            Action:
+                - "s3:GetObject"
+                - "s3:GetObjectVersion"
+                - "s3:GetBucketAcl"
+                - "s3:GetBucketLocation"
+            Resource:
+                - !GetAtt KeyBucket.Arn
+                - !Sub "${KeyBucket.Arn}/*"
+          - Effect: "Allow"
+            Action:
+                - "s3:PutObject"
+            Resource:
+                - !GetAtt OutputBucket.Arn
+                - !Sub "${OutputBucket.Arn}/*"
+          - Effect: "Allow"
+            Action:
+                - 'kms:Encrypt'
+                - 'kms:Decrypt'
+                - 'kms:ReEncrypt*'
+                - 'kms:GenerateDataKey*'
+                - 'kms:DescribeKey'
+            Resource:
+                - !GetAtt KMSKey.Arn
+
+  CodeBuildEndpointPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+        Description: Policy with permissions for codebuild to work with endpoints
+        Path: /
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                  - 'ec2:CreateNetworkInterface'
+                  - 'ec2:DescribeDhcpOptions'
+                  - 'ec2:DescribeNetworkInterfaces'
+                  - 'ec2:DeleteNetworkInterface'
+                  - 'ec2:DescribeSubnets'
+                  - 'ec2:DescribeSecurityGroups'
+                  - 'ec2:DescribeVpcs'
+              Resource: '*'
+            - Effect: Allow
+              Action:
+                  - 'ec2:CreateNetworkInterfacePermission'
+              Resource: !Sub 'arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:network-interface/*'
+
   GitPullRole:
     Type: AWS::IAM::Role
     Properties:
@@ -538,6 +605,90 @@ Resources:
                   - logs:PutLogEvents
                 Resource:
                   - arn:aws:logs:*:*:*
+              - Effect: Allow
+                Action:
+                  - codebuild:StartBuild
+                  - codebuild:BatchGetBuilds
+                Resource:
+                  - !GetAtt GitPullCodeBuild.Arn
+
+  GitPullCodeBuild:
+      Type: AWS::CodeBuild::Project
+      Properties:
+        VpcConfig: !If
+          - ShouldRunInVPC
+          - SecurityGroupIds:
+              - !Ref 'GitPullSecurityGroup'
+            Subnets: !Ref 'SubnetIds'
+          - !Ref 'AWS::NoValue'
+        Artifacts:
+          Type: NO_ARTIFACTS
+        Environment:
+          Image: aws/codebuild/standard:2.0
+          Type: LINUX_CONTAINER
+          ComputeType: BUILD_GENERAL1_SMALL
+        QueuedTimeoutInMinutes: 60
+        ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+        Source:
+          BuildSpec: |
+              version: 0.2
+              env:
+                exported-variables:
+                  - GIT_COMMIT_ID
+                  - GIT_COMMIT_MSG
+              phases:
+                install:
+                    runtime-versions:
+                        python: 3.7
+                    # commands:
+                    # - pip3 install boto3
+                build:
+                    commands:
+                    - echo "=======================Start-Deployment============================="
+                    - echo "Getting the SSH Private Key"
+                    - |
+                      python3 - << "EOF"
+                      from boto3 import client
+                      import os
+                      s3 = client('s3')
+                      kms = client('kms')
+                      enckey = s3.get_object(Bucket=os.getenv('KeyBucket'), Key=os.getenv('KeyObject'))['Body'].read()
+                      privkey = kms.decrypt(CiphertextBlob=enckey)['Plaintext']
+                      with open('enc_key.pem', 'w') as f:
+                          print(privkey.decode("utf-8"), file=f)
+                      EOF
+                    - mv ./enc_key.pem ~/.ssh/id_rsa
+                    - ls ~/.ssh/
+                    - echo "Setting SSH config profile"
+                    - | 
+                      cat > ~/.ssh/config <<EOF
+                      Host *
+                        AddKeysToAgent yes
+                        StrictHostKeyChecking no
+                        IdentityFile ~/.ssh/id_rsa
+                      EOF
+                    - chmod 600 ~/.ssh/id_rsa
+                    - echo "Cloning the repository $GitUrl on branch $Branch"
+                    - git clone --single-branch --depth=1 --branch $Branch $GitUrl .
+                    - ls
+                    - echo "Zipping the checked out contents"
+                    - |
+                      if [ "$exclude_git" = "True" ]; then
+                        zip -r $outputbucketkey ./ -x '*.git*'
+                      else 
+                        zip -r $outputbucketkey ./
+                      fi
+                    - ls -alh
+                    - echo "Put the zipped Object to Output Bucket"
+                    - aws s3 cp $outputbucketkey s3://$outputbucket/$outputbucketpath # --sse aws:kms --sse-kms-key-id $CodePipelineArtifactKMSKeyId
+                    - export GIT_COMMIT_ID=$(git rev-parse --short HEAD)
+                    - echo $GIT_COMMIT_ID
+                    - export GIT_COMMIT_MSG="$(git log -1 --pretty=%B)"
+                    - echo $GIT_COMMIT_MSG
+                    - echo "=======================End-Deployment============================="
+          Type: NO_SOURCE
+        TimeoutInMinutes: 14
+
   GitPullLambda:
     DependsOn: CopyZips
     Type: AWS::Lambda::Function
@@ -545,59 +696,27 @@ Resources:
       Handler: lambda_function.lambda_handler
       MemorySize: '128'
       Role: !GetAtt 'GitPullRole.Arn'
-      Runtime: python2.7
-      Timeout: '300'
+      Runtime: python3.8
+      Timeout: '900'
+      VpcConfig: !If
+        - ShouldRunInVPC
+        - SecurityGroupIds:
+            - !Ref 'GitPullSecurityGroup'
+          SubnetIds: !Ref 'SubnetIds'
+        - !Ref 'AWS::NoValue'
       Environment:
         Variables:
-          ExcludeGit: 'True'
+          ExcludeGit: !Ref ExcludeGit
+          GitPullCodeBuild: !Ref 'GitPullCodeBuild'
       Code:
         S3Bucket: !Ref 'LambdaZipsBucket'
         S3Key: !Sub '${QSS3KeyPrefix}functions/packages/GitPullS3/lambda.zip'
-  ZipDlRole:
-    Type: AWS::IAM::Role
-    Properties:
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaENIManagementAccess
-      AssumeRolePolicyDocument:
-        Statement:
-          - Sid: ''
-            Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action: sts:AssumeRole
-      Path: /
-      Policies:
-        - PolicyName: git2cp-zipdl
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - s3:PutObject
-                Resource:
-                  - !Join
-                    - ''
-                    - - 'arn:aws:s3:::'
-                      - !Ref 'OutputBucket'
-                  - !Join
-                    - ''
-                    - - 'arn:aws:s3:::'
-                      - !Ref 'OutputBucket'
-                      - /*
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource:
-                  - arn:aws:logs:*:*:*
-  ZipDlLambdaSecurityGroup:
+
+  GitPullSecurityGroup:
     Condition: ShouldRunInVPC
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Security Group to allow the lambda to access the git service
-      GroupName: ZipDlLambdaSecurityGroup
       SecurityGroupEgress:
         - CidrIp: !Ref 'VPCCidrRange'
           FromPort: 0
@@ -609,27 +728,7 @@ Resources:
           IpProtocol: tcp
           ToPort: 65535
       VpcId: !Ref 'VPCId'
-  ZipDlLambda:
-    DependsOn: CopyZips
-    Type: AWS::Lambda::Function
-    Properties:
-      Handler: lambda_function.lambda_handler
-      Role: !GetAtt 'ZipDlRole.Arn'
-      Code:
-        S3Bucket: !Ref 'LambdaZipsBucket'
-        S3Key: !Sub '${QSS3KeyPrefix}functions/packages/ZipDl/lambda.zip'
-      Runtime: python2.7
-      MemorySize: 128
-      Timeout: 30
-      VpcConfig: !If
-        - ShouldRunInVPC
-        - SecurityGroupIds:
-            - !Ref 'ZipDlLambdaSecurityGroup'
-          SubnetIds: !Ref 'SubnetIds'
-        - !Ref 'AWS::NoValue'
-      Environment:
-        Variables:
-          SCM_HOSTNAME_OVERRIDE: !Ref 'ScmHostnameOverride'
+
   WebHookRole:
     Type: AWS::IAM::Role
     Properties:
@@ -654,7 +753,6 @@ Resources:
                   - lambda:InvokeFunction
                 Resource:
                   - !GetAtt 'GitPullLambda.Arn'
-                  - !GetAtt 'ZipDlLambda.Arn'
   WebHookApi:
     Type: AWS::ApiGateway::RestApi
     Properties:
@@ -761,91 +859,6 @@ Resources:
                         \\'\",\"'\")\"\n"
                       - "    }\n"
                       - '}'
-          /zipdl:
-            post:
-              consumes:
-                - application/json
-              produces:
-                - application/json
-              responses:
-                '200':
-                  description: 200 response
-                  schema:
-                    $ref: '#/definitions/Empty'
-              x-amazon-apigateway-integration:
-                type: aws
-                credentials: !GetAtt 'WebHookRole.Arn'
-                responses:
-                  default:
-                    statusCode: '200'
-                requestParameters:
-                  integration.request.header.X-Amz-Invocation-Type: '''Event'''
-                passthroughBehavior: when_no_templates
-                httpMethod: POST
-                uri: !Join
-                  - ''
-                  - - 'arn:aws:apigateway:'
-                    - !Ref 'AWS::Region'
-                    - :lambda:path//2015-03-31/functions/
-                    - !GetAtt 'ZipDlLambda.Arn'
-                    - /invocations
-                requestTemplates:
-                  application/json: !Join
-                    - ''
-                    - - "#set($allParams = $input.params())\n"
-                      - "{\n"
-                      - "\"body-json\" : $input.json('$'),\n"
-                      - "\"params\" : {\n"
-                      - "#foreach($type in $allParams.keySet())\n"
-                      - "    #set($params = $allParams.get($type))\n"
-                      - "\"$type\" : {\n"
-                      - "    #foreach($paramName in $params.keySet())\n"
-                      - "    \"$paramName\" : \"$util.escapeJavaScript($params.get($paramName))\"\
-                        \n"
-                      - "        #if($foreach.hasNext),#end\n"
-                      - "    #end\n"
-                      - "}\n"
-                      - "    #if($foreach.hasNext),#end\n"
-                      - "#end\n"
-                      - "},\n"
-                      - "\"stage-variables\" : {\n"
-                      - "#foreach($key in $stageVariables.keySet())\n"
-                      - "\"$key\" : \"$util.escapeJavaScript($stageVariables.get($key))\"\
-                        \n"
-                      - "    #if($foreach.hasNext),#end\n"
-                      - "#end\n"
-                      - "},\n"
-                      - "\"context\" : {\n"
-                      - "    \"account-id\" : \"$context.identity.accountId\",\n"
-                      - "    \"api-id\" : \"$context.apiId\",\n"
-                      - "    \"api-key\" : \"$context.identity.apiKey\",\n"
-                      - "    \"authorizer-principal-id\" : \"$context.authorizer.principalId\"\
-                        ,\n"
-                      - "    \"caller\" : \"$context.identity.caller\",\n"
-                      - "    \"cognito-authentication-provider\" : \"$context.identity.cognitoAuthenticationProvider\"\
-                        ,\n"
-                      - "    \"cognito-authentication-type\" : \"$context.identity.cognitoAuthenticationType\"\
-                        ,\n"
-                      - "    \"cognito-identity-id\" : \"$context.identity.cognitoIdentityId\"\
-                        ,\n"
-                      - "    \"cognito-identity-pool-id\" : \"$context.identity.cognitoIdentityPoolId\"\
-                        ,\n"
-                      - "    \"http-method\" : \"$context.httpMethod\",\n"
-                      - "    \"stage\" : \"$context.stage\",\n"
-                      - "    \"source-ip\" : \"$context.identity.sourceIp\",\n"
-                      - "    \"user\" : \"$context.identity.user\",\n"
-                      - "    \"user-agent\" : \"$context.identity.userAgent\",\n"
-                      - "    \"user-arn\" : \"$context.identity.userArn\",\n"
-                      - "    \"request-id\" : \"$context.requestId\",\n"
-                      - "    \"resource-id\" : \"$context.resourceId\",\n"
-                      - "    \"resource-path\" : \"$context.resourcePath\",\n"
-                      - "    \"oauth-key\" : \"$stageVariables.oauthkey\",\n"
-                      - "    \"oauth-secret\" : \"$stageVariables.oauthsecret\",\n"
-                      - "    \"output-bucket\" : \"$stageVariables.outputbucket\"\
-                        ,\n"
-                      - "    \"git-token\" : \"$stageVariables.gittoken\"\n"
-                      - "    }\n"
-                      - '}'
         securityDefinitions:
           sigv4:
             type: apiKey
@@ -855,11 +868,13 @@ Resources:
         definitions:
           Empty:
             type: object
+
   WebHookApiDeployment:
     Type: AWS::ApiGateway::Deployment
     Properties:
       RestApiId: !Ref 'WebHookApi'
       StageName: DummyStage
+
   WebHookApiProdStage:
     Type: AWS::ApiGateway::Stage
     Properties:
@@ -876,43 +891,37 @@ Resources:
           - UseApiSecret
           - !Ref 'ApiSecret'
           - !Ref 'AWS::NoValue'
-        gittoken: !If
-          - UseGitToken
-          - !Ref 'GitToken'
-          - !Ref 'AWS::NoValue'
-        oauthkey: !If
-          - UseOauthKey
-          - !Ref 'OauthKey'
-          - !Ref 'AWS::NoValue'
-        oauthsecret: !If
-          - UseOauthSecret
-          - !Ref 'OauthSecret'
-          - !Ref 'AWS::NoValue'
+
   CustomDomainCertificate:
     Condition: UseCustomDomain
     Type: AWS::CertificateManager::Certificate
     Properties:
       DomainName: !Ref 'CustomDomainName'
+
   WebHookApiCustomDomainName:
     Condition: UseCustomDomain
     Type: AWS::ApiGateway::DomainName
     Properties:
       CertificateArn: !Ref 'CustomDomainCertificate'
       DomainName: !Ref 'CustomDomainName'
+
   WebHookApiCustomDomainNameMapping:
     Condition: UseCustomDomain
     Type: AWS::ApiGateway::BasePathMapping
     Properties:
       DomainName: !Ref 'CustomDomainName'
       RestApiId: !Ref 'WebHookApi'
+
 Outputs:
   CustomDomainNameCNAME:
     Value: !If
       - UseCustomDomain
       - !GetAtt 'WebHookApiCustomDomainName.DistributionDomainName'
       - ''
+
   PublicSSHKey:
     Value: !Ref 'CreateSSHKey'
+
   GitPullWebHookApi:
     Value: !Join
       - ''
@@ -929,21 +938,6 @@ Outputs:
         - /
         - !Ref 'WebHookApiProdStage'
         - /gitpull
-  ZipDownloadWebHookApi:
-    Value: !Join
-      - ''
-      - - ' https://'
-        - !If
-          - UseCustomDomain
-          - !Ref 'CustomDomainName'
-          - !Join
-            - ''
-            - - !Ref 'WebHookApi'
-              - .execute-api.
-              - !Ref 'AWS::Region'
-              - .amazonaws.com
-        - /
-        - !Ref 'WebHookApiProdStage'
-        - /zipdl
+
   OutputBucketName:
     Value: !Ref 'OutputBucket'

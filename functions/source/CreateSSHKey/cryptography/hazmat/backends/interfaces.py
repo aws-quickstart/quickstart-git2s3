@@ -57,7 +57,7 @@ class HMACBackend(object):
     @abc.abstractmethod
     def create_hmac_ctx(self, key, algorithm):
         """
-        Create a MACContext for calculating a message authentication code.
+        Create a context for calculating a message authentication code.
         """
 
 
@@ -72,7 +72,7 @@ class CMACBackend(object):
     @abc.abstractmethod
     def create_cmac_ctx(self, algorithm):
         """
-        Create a MACContext for calculating a message authentication code.
+        Create a context for calculating a message authentication code.
         """
 
 
@@ -86,8 +86,9 @@ class PBKDF2HMACBackend(object):
         """
 
     @abc.abstractmethod
-    def derive_pbkdf2_hmac(self, algorithm, length, salt, iterations,
-                           key_material):
+    def derive_pbkdf2_hmac(
+        self, algorithm, length, salt, iterations, key_material
+    ):
         """
         Return length bytes derived from provided PBKDF2 parameters.
         """

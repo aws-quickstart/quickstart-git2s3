@@ -6,38 +6,95 @@ from __future__ import absolute_import, division, print_function
 
 from cryptography.x509 import certificate_transparency
 from cryptography.x509.base import (
-    Certificate, CertificateBuilder, CertificateRevocationList,
+    AttributeNotFound,
+    Certificate,
+    CertificateBuilder,
+    CertificateRevocationList,
     CertificateRevocationListBuilder,
-    CertificateSigningRequest, CertificateSigningRequestBuilder,
-    InvalidVersion, RevokedCertificate, RevokedCertificateBuilder,
-    Version, load_der_x509_certificate, load_der_x509_crl, load_der_x509_csr,
-    load_pem_x509_certificate, load_pem_x509_crl, load_pem_x509_csr,
+    CertificateSigningRequest,
+    CertificateSigningRequestBuilder,
+    InvalidVersion,
+    RevokedCertificate,
+    RevokedCertificateBuilder,
+    Version,
+    load_der_x509_certificate,
+    load_der_x509_crl,
+    load_der_x509_csr,
+    load_pem_x509_certificate,
+    load_pem_x509_crl,
+    load_pem_x509_csr,
     random_serial_number,
 )
 from cryptography.x509.extensions import (
-    AccessDescription, AuthorityInformationAccess,
-    AuthorityKeyIdentifier, BasicConstraints, CRLDistributionPoints,
-    CRLNumber, CRLReason, CertificateIssuer, CertificatePolicies,
-    DeltaCRLIndicator, DistributionPoint, DuplicateExtension, ExtendedKeyUsage,
-    Extension, ExtensionNotFound, ExtensionType, Extensions, FreshestCRL,
-    GeneralNames, InhibitAnyPolicy, InvalidityDate, IssuerAlternativeName,
-    KeyUsage, NameConstraints, NoticeReference, OCSPNoCheck, PolicyConstraints,
-    PolicyInformation, PrecertificateSignedCertificateTimestamps, ReasonFlags,
-    SubjectAlternativeName, SubjectKeyIdentifier, TLSFeature, TLSFeatureType,
-    UnrecognizedExtension, UserNotice
+    AccessDescription,
+    AuthorityInformationAccess,
+    AuthorityKeyIdentifier,
+    BasicConstraints,
+    CRLDistributionPoints,
+    CRLNumber,
+    CRLReason,
+    CertificateIssuer,
+    CertificatePolicies,
+    DeltaCRLIndicator,
+    DistributionPoint,
+    DuplicateExtension,
+    ExtendedKeyUsage,
+    Extension,
+    ExtensionNotFound,
+    ExtensionType,
+    Extensions,
+    FreshestCRL,
+    GeneralNames,
+    InhibitAnyPolicy,
+    InvalidityDate,
+    IssuerAlternativeName,
+    IssuingDistributionPoint,
+    KeyUsage,
+    NameConstraints,
+    NoticeReference,
+    OCSPNoCheck,
+    OCSPNonce,
+    PolicyConstraints,
+    PolicyInformation,
+    PrecertPoison,
+    PrecertificateSignedCertificateTimestamps,
+    ReasonFlags,
+    SignedCertificateTimestamps,
+    SubjectAlternativeName,
+    SubjectInformationAccess,
+    SubjectKeyIdentifier,
+    TLSFeature,
+    TLSFeatureType,
+    UnrecognizedExtension,
+    UserNotice,
 )
 from cryptography.x509.general_name import (
-    DNSName, DirectoryName, GeneralName, IPAddress, OtherName, RFC822Name,
-    RegisteredID, UniformResourceIdentifier, UnsupportedGeneralNameType,
-    _GENERAL_NAMES
+    DNSName,
+    DirectoryName,
+    GeneralName,
+    IPAddress,
+    OtherName,
+    RFC822Name,
+    RegisteredID,
+    UniformResourceIdentifier,
+    UnsupportedGeneralNameType,
+    _GENERAL_NAMES,
 )
 from cryptography.x509.name import (
-    Name, NameAttribute, RelativeDistinguishedName
+    Name,
+    NameAttribute,
+    RelativeDistinguishedName,
 )
 from cryptography.x509.oid import (
-    AuthorityInformationAccessOID, CRLEntryExtensionOID,
-    CertificatePoliciesOID, ExtendedKeyUsageOID, ExtensionOID, NameOID,
-    ObjectIdentifier, SignatureAlgorithmOID, _SIG_OIDS_TO_HASH
+    AuthorityInformationAccessOID,
+    CRLEntryExtensionOID,
+    CertificatePoliciesOID,
+    ExtendedKeyUsageOID,
+    ExtensionOID,
+    NameOID,
+    ObjectIdentifier,
+    SignatureAlgorithmOID,
+    _SIG_OIDS_TO_HASH,
 )
 
 
@@ -74,6 +131,7 @@ OID_RSA_WITH_SHA224 = SignatureAlgorithmOID.RSA_WITH_SHA224
 OID_RSA_WITH_SHA256 = SignatureAlgorithmOID.RSA_WITH_SHA256
 OID_RSA_WITH_SHA384 = SignatureAlgorithmOID.RSA_WITH_SHA384
 OID_RSA_WITH_SHA512 = SignatureAlgorithmOID.RSA_WITH_SHA512
+OID_RSASSA_PSS = SignatureAlgorithmOID.RSASSA_PSS
 
 OID_COMMON_NAME = NameOID.COMMON_NAME
 OID_COUNTRY_NAME = NameOID.COUNTRY_NAME
@@ -118,6 +176,7 @@ __all__ = [
     "load_pem_x509_crl",
     "load_der_x509_crl",
     "random_serial_number",
+    "AttributeNotFound",
     "InvalidVersion",
     "DeltaCRLIndicator",
     "DuplicateExtension",
@@ -132,6 +191,7 @@ __all__ = [
     "Extension",
     "ExtendedKeyUsage",
     "FreshestCRL",
+    "IssuingDistributionPoint",
     "TLSFeature",
     "TLSFeatureType",
     "OCSPNoCheck",
@@ -139,6 +199,7 @@ __all__ = [
     "CRLNumber",
     "KeyUsage",
     "AuthorityInformationAccess",
+    "SubjectInformationAccess",
     "AccessDescription",
     "CertificatePolicies",
     "PolicyInformation",
@@ -181,4 +242,7 @@ __all__ = [
     "UnrecognizedExtension",
     "PolicyConstraints",
     "PrecertificateSignedCertificateTimestamps",
+    "PrecertPoison",
+    "OCSPNonce",
+    "SignedCertificateTimestamps",
 ]

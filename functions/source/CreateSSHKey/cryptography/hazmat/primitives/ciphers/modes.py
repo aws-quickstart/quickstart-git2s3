@@ -72,9 +72,11 @@ def _check_aes_key_length(self, algorithm):
 
 def _check_iv_length(self, algorithm):
     if len(self.initialization_vector) * 8 != algorithm.block_size:
-        raise ValueError("Invalid IV size ({0}) for {1}.".format(
-            len(self.initialization_vector), self.name
-        ))
+        raise ValueError(
+            "Invalid IV size ({}) for {}.".format(
+                len(self.initialization_vector), self.name
+            )
+        )
 
 
 def _check_iv_and_key_length(self, algorithm):
@@ -88,9 +90,7 @@ class CBC(object):
     name = "CBC"
 
     def __init__(self, initialization_vector):
-        if not isinstance(initialization_vector, bytes):
-            raise TypeError("initialization_vector must be bytes")
-
+        utils._check_byteslike("initialization_vector", initialization_vector)
         self._initialization_vector = initialization_vector
 
     initialization_vector = utils.read_only_property("_initialization_vector")
@@ -103,8 +103,7 @@ class XTS(object):
     name = "XTS"
 
     def __init__(self, tweak):
-        if not isinstance(tweak, bytes):
-            raise TypeError("tweak must be bytes")
+        utils._check_byteslike("tweak", tweak)
 
         if len(tweak) != 16:
             raise ValueError("tweak must be 128-bits (16 bytes)")
@@ -134,9 +133,7 @@ class OFB(object):
     name = "OFB"
 
     def __init__(self, initialization_vector):
-        if not isinstance(initialization_vector, bytes):
-            raise TypeError("initialization_vector must be bytes")
-
+        utils._check_byteslike("initialization_vector", initialization_vector)
         self._initialization_vector = initialization_vector
 
     initialization_vector = utils.read_only_property("_initialization_vector")
@@ -149,9 +146,7 @@ class CFB(object):
     name = "CFB"
 
     def __init__(self, initialization_vector):
-        if not isinstance(initialization_vector, bytes):
-            raise TypeError("initialization_vector must be bytes")
-
+        utils._check_byteslike("initialization_vector", initialization_vector)
         self._initialization_vector = initialization_vector
 
     initialization_vector = utils.read_only_property("_initialization_vector")
@@ -164,9 +159,7 @@ class CFB8(object):
     name = "CFB8"
 
     def __init__(self, initialization_vector):
-        if not isinstance(initialization_vector, bytes):
-            raise TypeError("initialization_vector must be bytes")
-
+        utils._check_byteslike("initialization_vector", initialization_vector)
         self._initialization_vector = initialization_vector
 
     initialization_vector = utils.read_only_property("_initialization_vector")
@@ -179,9 +172,7 @@ class CTR(object):
     name = "CTR"
 
     def __init__(self, nonce):
-        if not isinstance(nonce, bytes):
-            raise TypeError("nonce must be bytes")
-
+        utils._check_byteslike("nonce", nonce)
         self._nonce = nonce
 
     nonce = utils.read_only_property("_nonce")
@@ -189,9 +180,11 @@ class CTR(object):
     def validate_for_algorithm(self, algorithm):
         _check_aes_key_length(self, algorithm)
         if len(self.nonce) * 8 != algorithm.block_size:
-            raise ValueError("Invalid nonce size ({0}) for {1}.".format(
-                len(self.nonce), self.name
-            ))
+            raise ValueError(
+                "Invalid nonce size ({}) for {}.".format(
+                    len(self.nonce), self.name
+                )
+            )
 
 
 @utils.register_interface(Mode)
@@ -206,20 +199,22 @@ class GCM(object):
         # len(initialization_vector) must in [1, 2 ** 64), but it's impossible
         # to actually construct a bytes object that large, so we don't check
         # for it
-        if not isinstance(initialization_vector, bytes):
-            raise TypeError("initialization_vector must be bytes")
+        utils._check_byteslike("initialization_vector", initialization_vector)
+        if len(initialization_vector) == 0:
+            raise ValueError("initialization_vector must be at least 1 byte")
         self._initialization_vector = initialization_vector
         if tag is not None:
-            if not isinstance(tag, bytes):
-                raise TypeError("tag must be bytes or None")
+            utils._check_bytes("tag", tag)
             if min_tag_length < 4:
                 raise ValueError("min_tag_length must be >= 4")
             if len(tag) < min_tag_length:
                 raise ValueError(
-                    "Authentication tag must be {0} bytes or longer.".format(
-                        min_tag_length)
+                    "Authentication tag must be {} bytes or longer.".format(
+                        min_tag_length
+                    )
                 )
         self._tag = tag
+        self._min_tag_length = min_tag_length
 
     tag = utils.read_only_property("_tag")
     initialization_vector = utils.read_only_property("_initialization_vector")
