@@ -144,7 +144,6 @@ Resources:
         - functions/packages/CreateSSHKey/lambda.zip
         - functions/packages/DeleteBucketContents/lambda.zip
         - functions/packages/GitPullS3/lambda.zip
-        - functions/packages/ZipDl/lambda.zip
         - functions/packages/CustomActionLambda/lambda.zip
 
   CopyZipsRole:
