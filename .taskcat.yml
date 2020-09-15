@@ -1,0 +1,27 @@
+project:
+  name: quickstart-git2s3
+  owner: jmmccon@amazon.com
+  package_lambda: true
+  lambda_source_path: functions/source
+  lambda_zip_path: functions/packages
+  regions:
+  - ap-northeast-1
+  - ap-northeast-2
+  - ap-south-1
+  - ap-southeast-1
+  - ap-southeast-2
+  - ca-central-1
+  - eu-central-1
+  - eu-west-1
+  - eu-west-2
+  - sa-east-1
+  - us-east-1
+  - us-east-2
+  - us-west-1
+  - us-west-2
+  parameters:
+    AllowedIps: 131.103.20.160/27,165.254.145.0/26,104.192.143.0/24
+    QSS3BucketName: $[taskcat_autobucket]
+  template: templates/git2s3.template.yaml
+tests:
+  git2s3: {}
