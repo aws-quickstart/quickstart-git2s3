@@ -22,6 +22,6 @@ project:
   parameters:
     AllowedIps: 131.103.20.160/27,165.254.145.0/26,104.192.143.0/24
     QSS3BucketName: $[taskcat_autobucket]
-  template: templates/git2s3.template
+  template: templates/git2s3.template.yaml
 tests:
   git2s3: {}
