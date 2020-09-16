@@ -144,7 +144,6 @@ Resources:
         - functions/packages/CreateSSHKey/lambda.zip
         - functions/packages/DeleteBucketContents/lambda.zip
         - functions/packages/GitPullS3/lambda.zip
-        - functions/packages/CustomActionLambda/lambda.zip
 
   CopyZipsRole:
     Type: AWS::IAM::Role
@@ -383,10 +382,10 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Handler: lambda_function.lambda_handler
-      MemorySize: '128'
+      MemorySize: 128
       Role: !GetAtt 'CreateSSHKeyRole.Arn'
       Runtime: python3.8
-      Timeout: '300'
+      Timeout: 300
       Code:
         S3Bucket: !Ref 'LambdaZipsBucket'
         S3Key: !Sub '${QSS3KeyPrefix}functions/packages/CreateSSHKey/lambda.zip'
@@ -451,10 +450,10 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Handler: lambda_function.lambda_handler
-      MemorySize: '128'
+      MemorySize: 128
       Role: !GetAtt 'DeleteBucketContentsRole.Arn'
       Runtime: python3.8
-      Timeout: '300'
+      Timeout: 300
       Code:
         S3Bucket: !Ref 'LambdaZipsBucket'
         S3Key: !Sub '${QSS3KeyPrefix}functions/packages/DeleteBucketContents/lambda.zip'
@@ -693,10 +692,10 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Handler: lambda_function.lambda_handler
-      MemorySize: '128'
+      MemorySize: 128
       Role: !GetAtt 'GitPullRole.Arn'
       Runtime: python3.8
-      Timeout: '900'
+      Timeout: 900
       VpcConfig: !If
         - ShouldRunInVPC
         - SecurityGroupIds:
