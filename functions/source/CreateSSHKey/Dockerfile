@@ -1,9 +1,9 @@
-FROM lambci/lambda:build-python3.7
+FROM lambci/lambda:build-python3.8
 
 COPY . .
 
 RUN mkdir -p python/ && \
-    pip install -t python/ -r ./requirements.txt && \
+    pip install -t ./ -r ./requirements.txt && \
     find . -name "*.dist-info"  -exec rm -rf {} \; | true && \
     find . -name "*.egg-info"  -exec rm -rf {} \; | true && \
     find . -name "*.pth"  -exec rm -rf {} \; | true && \
