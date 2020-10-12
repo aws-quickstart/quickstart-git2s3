@@ -25,3 +25,6 @@
 // Additional content will be generated automatically based on these attributes.
 // :marketplace_subscription:
 // :marketplace_listing_url: https://example.com/
+:disable_licenses:
+:disable_regions:
+:disable_requirements:
