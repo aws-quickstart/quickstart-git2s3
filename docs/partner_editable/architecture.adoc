@@ -1,28 +1,23 @@
-Deploying this Quick Start for a new virtual private cloud (VPC) with
-default parameters builds the following {partner-product-short-name} environment in the
-AWS Cloud.
+Deploying this Quick Start builds the following environment in the AWS Cloud.
 
 // Replace this example diagram with your own. Send us your source PowerPoint file. Be sure to follow our guidelines here : http://(we should include these points on our contributors giude)
 :xrefstyle: short
 [#architecture1]
 .Quick Start architecture for {partner-product-short-name} on AWS
 [link=images/architecture_diagram.png]
-image::../images/architecture_diagram.png[Architecture,width=100%,height=100%]
+image::../images/image3.png[Architecture,width=100%,height=100%]
+Figure 2: Webhook endpoint architecture on AWS
 
-As shown in <<architecture1>>, the Quick Start sets up the following:
+The Quick Start deployment sets up a serverless AWS Cloud environment that includes the following components.
 
-* A highly available architecture that spans two Availability Zones.*
-* A VPC configured with public and private subnets, according to AWS
-best practices, to provide you with your own virtual network on AWS.*
-* In the public subnets:
-** Managed network address translation (NAT) gateways to allow outbound
-internet access for resources in the private subnets.*
-** A Linux bastion host in an Auto Scaling group to allow inbound Secure
-Shell (SSH) access to EC2 instances in public and private subnets.*
-* In the private subnets:
-** <item>.
-** <item>.
-// Add bullet points for any additional components that are included in the deployment. Make sure that the additional components are also represented in the architecture diagram. End each bullet with a period.
-* <describe any additional components>.
+* An API Gateway endpoint to accept the webhook requests from Git.
+* Lambda functions to connect to the Git service, either over SSH or through the Git service’s endpoint. These functions zip the code and upload it to Amazon S3.
 
-[.small]#*The template that deploys the Quick Start into an existing VPC skips the components marked by asterisks and prompts you for your existing VPC configuration.#
+*Important* The Lambda functions that are deployed by this Quick Start must be able to communicate with your Git repository. For example, you can use a SaaS-based Git service that the Lambda service can reach through the internet.
+
+* An AWS KMS key to encrypt the SSH private key used to connect to the repository over SSH.
+* Two S3 buckets: One bucket stores the zipped contents of your Git repository, and the second bucket stores the AWS KMS-encrypted SSH private keys that are generated during stack creation. Note that the first bucket has versioning enabled, and all previous versions are retained indefinitely. If you’d like to manage the retention period for old versions, follow the instructions in the http://docs.aws.amazon.com/AmazonS3/latest/user-guide/create-lifecycle.html[Amazon S3 documentation].
+* Several IAM roles required for the Lambda functions and API Gateway. The inline permissions attached to these roles are scoped using the http://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege[least privilege] model.
+* Two Lambda-backed AWS CloudFormation custom resources. One resource generates an SSH keypair, encrypts it using AWS KMS, and stores it in Amazon S3. The second resource deletes the content of the two S3 buckets on stack deletion.
+
+NOTE: If you need backups, make sure to copy the S3 bucket contents before you delete the CloudFormation stack.

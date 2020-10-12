@@ -1,7 +1,1 @@
-// Replace the content in <>
-// Identify your target audience and explain how/why they would use this Quick Start.
-//Avoid borrowing text from third-party websites (copying text from AWS service documentation is fine). Also, avoid marketing-speak, focusing instead on the technical aspect.
-
-This guide provides instructions for deploying the {partner-product-short-name} Quick Start reference architecture on the AWS Cloud.
-
-This Quick Start is for users who <target audience and usage scenario>
+This Quick Start implements HTTPS endpoints and code that helps you link AWS services with webhooks. Git webhooks enable event-driven integration between Git services and external applications. This Quick Start uses this integration to receive an event when commits are pushed to a Git repository.
