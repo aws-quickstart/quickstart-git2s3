@@ -1,0 +1,42 @@
+// Add any tips or answers to anticipated questions. This could include the following troubleshooting information. If you don’t have any other Q&A to add, change “FAQ” to “Troubleshooting.”
+
+== FAQ
+
+*Q.* I encountered a *CREATE_FAILED* error when I launched the Quick Start.
+
+*A.* If AWS CloudFormation fails to create the stack, we recommend that you relaunch the template with *Rollback on failure* set to *Disabled*. (This setting is under *Advanced* in the AWS CloudFormation console, *Options* page.) With this setting, the stack’s state is retained and the instance is left running, so you can troubleshoot the issue.)
+
+WARNING: When you set *Rollback on failure* to *Disabled*, you continue to incur AWS charges for this stack. Please make sure to delete the stack when you finish troubleshooting.
+
+For additional information, see https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html[Troubleshooting AWS CloudFormation^] on the AWS website.
+
+== Troubleshooting
+
+If your commits are not being pushed through to Amazon S3, check the following:
+
+* In your Git service’s webhooks configuration, check that your configured security parameters and the endpoint are correct. Consult the Git service documentation for detailed guidance on configuration.
+* Check the Lambda logs for errors. These are stored in Amazon CloudWatch Logs. To access the logs, open the endpoint’s Lambda function in the AWS console, navigate to the *Monitoring* tab, and then choose *View logs in CloudWatch*.
+
+== Additional Resources
+
+=== AWS services
+
+*AWS CloudFormation* https://aws.amazon.com/documentation/cloudformation/
+
+*AWS Lambda* https://aws.amazon.com/documentation/lambda/
+
+*Amazon API Gateway* https://aws.amazon.com/documentation/apigateway/
+
+*Amazon S3* https://aws.amazon.com/documentation/s3/
+
+*AWS CodePipeline* https://aws.amazon.com/documentation/codepipeline/
+
+*AWS CodeBuild* https://aws.amazon.com/documentation/codebuild/
+
+=== Webhooks
+
+*GitHub Developer Repository Webhooks API* https://developer.github.com/v3/repos/hooks/
+
+*Atlassian Bitbucket Webhooks documentation* https://confluence.atlassian.com/bitbucket/manage-webhooks-735643732.html
+
+*GitLab Webhooks documentation* https://docs.gitlab.com/ce/user/project/integrations/webhooks.html

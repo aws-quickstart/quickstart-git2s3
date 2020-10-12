@@ -1,0 +1,24 @@
+
+.General Settings
+[width="100%",cols="16%,11%,73%",options="header",]
+|===
+|Parameter label (name) |Default value|Description|Output S3 Bucket Name
+(`OutputBucketName`)|`**__Requires input__**`|OPTIONAL: Bucket Name where the zip file output should be placed, if left blank a bucket name will be automatically generated.|Custom Domain Name
+(`CustomDomainName`)|`**__Requires input__**`|Use a custom domain name for the webhook endpoint, if left blank API Gateway will create a domain name for you
+|===
+.Git Pull Settings
+[width="100%",cols="16%,11%,73%",options="header",]
+|===
+|Parameter label (name) |Default value|Description|API Secret
+(`ApiSecret`)|`**__Requires input__**`|gitpull method only. WebHook Secrets for use with GitHub Enterprise and GitLab. If a secret is matched IP range authentication is bypassed. Cannot contain: , \ "|Allowed IPs
+(`AllowedIps`)|`18.205.93.0/25,18.234.32.128/25,13.52.5.0/25`|gitpull method only. Comma seperated list of IP CIDR blocks for source IP authentication. The BitBucket Cloud IP ranges are provided as defaults.|**NO_LABEL**
+(`ExcludeGit`)|`True`|Choose True to include the .git directory in the zip file or false to not include
+|===
+.AWS Quick Start Configuration
+[width="100%",cols="16%,11%,73%",options="header",]
+|===
+|Parameter label (name) |Default value|Description|Quick Start S3 Bucket Name
+(`QSS3BucketName`)|`aws-quickstart`|S3 bucket name for the Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).|Quick Start S3 bucket region
+(`QSS3BucketRegion`)|`us-east-1`|The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.|Quick Start S3 Key Prefix
+(`QSS3KeyPrefix`)|`quickstart-git2s3/`|S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).
+|===

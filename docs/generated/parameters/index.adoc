@@ -1,0 +1,3 @@
+
+=== Launch Quick Start
+include::git2s3.template.adoc[]
