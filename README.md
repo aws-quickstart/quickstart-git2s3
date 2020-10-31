@@ -8,7 +8,9 @@ After you deploy the Quick Start, you can set up a webhook that uses the endpoin
 
 The Quick Start includes an AWS CloudFormation template that automates the deployment. You can also use the AWS CloudFormation template as a starting point for your own implementation.
 
-![Quick Start architecture for implementing webhooks on AWS](https://d0.awsstatic.com/partner-network/QuickStart/datasheets/git-to-s3-webhooks-architecture-on-aws.png)
+<!-- ![Quick Start architecture for implementing webhooks on AWS](https://d0.awsstatic.com/partner-network/QuickStart/datasheets/git-to-s3-webhooks-architecture-on-aws.png) -->
+
+![Quick Start architecture for implementing webhooks on AWS](./docs/images/image3.png)
 
 For implementation details, deployment instructions, and customization options, see the [deployment guide](https://fwd.aws/QQBRr).
 
