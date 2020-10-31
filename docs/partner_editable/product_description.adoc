@@ -2,6 +2,7 @@
 As Figure 1 illustrates, when code is pushed to your repository, the Git service sends an HTTPS POST to the endpoints configured by the Quick Start. The POST contains JSON data about the push operation, including the repository details that the Quick Start uses to fetch the latest version of your code.
 
 image:../images/image2.png[image,width=647,height=266]
+
 Figure 1: Using webhooks for code commits
 
 This Quick Start implements the required code to trigger a Lambda function that zips up the code in your repository and places the .zip file in Amazon S3. When this function is triggered by a Git webhook, it provides a convenient way to bridge Git services with AWS services like AWS CodePipeline and AWS CodeBuild, so that builds and pipeline executions occur automatically when you commit your code to a Git repository. Linking your existing code repositories to the AWS Cloud in this way enables your code to be continuously integrated, tested, built, and deployed on the AWS Cloud with each change.
