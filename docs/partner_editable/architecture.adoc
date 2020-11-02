@@ -6,7 +6,8 @@ Deploying this Quick Start builds the following environment in the AWS Cloud.
 .Quick Start architecture for {partner-product-short-name} on AWS
 [link=images/architecture_diagram.png]
 image::../images/image3.png[Architecture,width=100%,height=100%]
-Figure 2: Webhook endpoint architecture on AWS
+
+*Figure 2: Webhook endpoint architecture on AWS*
 
 The Quick Start deployment sets up a serverless AWS Cloud environment that includes the following components.
 
