@@ -3,15 +3,15 @@
 [width="100%",cols="16%,11%,73%",options="header",]
 |===
 |Parameter label (name) |Default value|Description|Output S3 Bucket Name
-(`OutputBucketName`)|`**__Requires input__**`|OPTIONAL: Bucket Name where the zip file output should be placed, if left blank a bucket name will be automatically generated.|Custom Domain Name
-(`CustomDomainName`)|`**__Requires input__**`|Use a custom domain name for the webhook endpoint, if left blank API Gateway will create a domain name for you
+(`OutputBucketName`)|`**__Blank string__**`|OPTIONAL: Bucket Name where the zip file output should be placed, if left blank a bucket name will be automatically generated.|Custom Domain Name
+(`CustomDomainName`)|`**__Blank string__**`|Use a custom domain name for the webhook endpoint, if left blank API Gateway will create a domain name for you
 |===
 .Git Pull Settings
 [width="100%",cols="16%,11%,73%",options="header",]
 |===
 |Parameter label (name) |Default value|Description|API Secret
-(`ApiSecret`)|`**__Requires input__**`|gitpull method only. WebHook Secrets for use with GitHub Enterprise and GitLab. If a secret is matched IP range authentication is bypassed. Cannot contain: , \ "|Allowed IPs
-(`AllowedIps`)|`18.205.93.0/25,18.234.32.128/25,13.52.5.0/25`|gitpull method only. Comma seperated list of IP CIDR blocks for source IP authentication. The BitBucket Cloud IP ranges are provided as defaults.|**NO_LABEL**
+(`ApiSecret`)|`**__Blank string__**`|gitpull method only. WebHook Secrets for use with GitHub Enterprise and GitLab. If a secret is matched IP range authentication is bypassed. Cannot contain: , \ "|Allowed IPs
+(`AllowedIps`)|`18.205.93.0/25,18.234.32.128/25,13.52.5.0/25`|gitpull method only. Comma seperated list of IP CIDR blocks for source IP authentication. The BitBucket Cloud IP ranges are provided as defaults.|Exclude Git
 (`ExcludeGit`)|`True`|Choose True to include the .git directory in the zip file or false to not include
 |===
 .AWS Quick Start Configuration
