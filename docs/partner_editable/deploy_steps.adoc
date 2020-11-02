@@ -30,10 +30,11 @@ After you have successfully deployed the Quick Start, you can configure the serv
 
 image:../images/image5.png[Figure 4,width=701,height=222]
 
-Figure 4: Outputs tab after deployment
+
+*Figure 3: Outputs tab after deployment*
+
 
 * *GitPullWebHookApi* is the webhook endpoint to use if you opt for the Git pull method described in the link:#webhook-endpoints[Webhook Endpoints] section of this guide.
-* *ZipDownloadWebHookApi* is the webhook endpoint to use if you opt for the zip download method described in the link:#webhook-endpoints[Webhook Endpoints] section of this guide.
 * *PublicSSHKey* is the public SSH key that you use to connect to your repository if you’re using the Git pull endpoint. This key can be configured as a read-only machine user or as a deployment key in your Git service.
 
 The exact process to set up webhooks differs from service to service. For step-by-step instructions, consult your Git service’s documentation.

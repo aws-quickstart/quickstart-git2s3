@@ -38,6 +38,8 @@ Metadata:
         default: Quick Start S3 bucket region
       QSS3KeyPrefix:
         default: Quick Start S3 Key Prefix
+      ExcludeGit:
+        default: Exclude Git
 Parameters:
   AllowedIps:
     Description: gitpull method only. Comma seperated list of IP CIDR blocks for source
