@@ -32,7 +32,7 @@ image:../images/image7.png[Figure 4,width=648,height=198]
 
 image:../images/image8.png[Figure 5,width=646,height=348]
 
-*Figure 5: Checking for S3 bucket updates after a commit*
+*Figure 4: Checking for S3 bucket updates after a commit*
 
 === Best Practices
 
