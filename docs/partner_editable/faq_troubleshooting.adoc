@@ -17,6 +17,12 @@ If your commits are not being pushed through to Amazon S3, check the following:
 * In your Git service’s webhooks configuration, check that your configured security parameters and the endpoint are correct. Consult the Git service documentation for detailed guidance on configuration.
 * Check the Lambda logs for errors. These are stored in Amazon CloudWatch Logs. To access the logs, open the endpoint’s Lambda function in the AWS console, navigate to the *Monitoring* tab, and then choose *View logs in CloudWatch*.
 
+For additional information, see https://docs.aws.amazon.com/lambda/latest/dg/lambda-troubleshooting.html[Troubleshooting issues in AWS Lambda^] on the AWS website.
+
+* Check the AWS CodeBuild project logs for errors. These are stored in Amazon CloudWatch Logs. To access the logs, open the endpoint’s CodeBuild Build Project in the AWS console, select a *Build run* and click on the hyperlink and navigate to the *Build logs* tab to see the build execution logs.
+
+For additional information, see https://docs.aws.amazon.com/codebuild/latest/userguide/troubleshooting.html[Troubleshooting AWS CodeBuild^] on the AWS website.
+
 == Additional Resources
 
 === AWS services
