@@ -13,19 +13,19 @@ image::../images/image3.png[Architecture,width=100%,height=100%]
 
 The Quick Start deployment sets up a serverless AWS Cloud environment that includes the following components:
 
-* An Amazon API Gateway endpoint that accepts webhook requests from Git.
-* A Lambda function that processes Git webhook requests and submits code to AWS CodeBuild.
-* AWS CodeBuild that connects to the Git repository and compresses and uploads code from it to an Amazon S3 bucket.
+* An Amazon API Gateway endpoint to accept webhook requests from Git.
+* An AWS Lambda function to process Git webhook requests received by the API Gateway and initiate builds on AWS CodeBuild.
+* A CodeBuild project to compress and upload code from the Git repository to an Amazon S3 bucket.
 
-IMPORTANT: The AWS CodeBuild project that is deployed by this Quick Start must be able to communicate with your Git repository, either over SSH or through the Git service’s endpoint. You can use a SaaS-based Git service to which AWS CodeBuild can connect over the internet.
+IMPORTANT: The CodeBuild project that is deployed by this Quick Start must be able to connect to your Git repository, either over SSH or through the Git service endpoint. You can use a SaaS-based Git service to which AWS CodeBuild can connect over the internet.
 
 * AWS Key Management Service (KMS) to encrypt the SSH private keys that AWS CodeBuild uses to connect to the Git repository over SSH.
-* Two S3 buckets, one for compressed Git repository code, and another for the AWS KMS-encrypted SSH private keys that are generated during stack creation. 
+* Two Amazon Simple Storage Service (S3) buckets, one to store the compressed contents of the Git repository, and another to store encrypted SSH keys. 
 
-NOTE: The first S3 bucket has versioning enabled. All previous versions are retained indefinitely. To modify the retention period, see http://docs.aws.amazon.com/AmazonS3/latest/user-guide/create-lifecycle.html[How do I create a lifecycle rule for an S3 bucket?].
+NOTE: The first S3 bucket has versioning enabled, and all previous versions are retained indefinitely. To modify the retention period, see http://docs.aws.amazon.com/AmazonS3/latest/user-guide/create-lifecycle.html[How do I create a lifecycle rule for an S3 bucket?].
 
-* Several IAM roles required by the Lambda function and API Gateway. The inline permissions attached to these roles are scoped using the http://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege[least privilege] model.
+* AWS Identity and Access Management (IAM) roles required by Lambda and API Gateway. The inline permissions attached to these roles are scoped using the http://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege[least privilege] model.
 
 * Two Lambda-backed AWS CloudFormation custom resources. One resource generates an SSH key pair, encrypts it using AWS KMS, and stores it in an S3 bucket. The second resource deletes the contents of the two S3 buckets when the AWS CloudFormation stack is deleted.
 
-WARNING: To ensure you have backups, copy the contents of the S3 buckets before deleting the AWS CloudFormation stack.
+WARNING: If you need backups, copy the contents of the S3 buckets before deleting the AWS CloudFormation stack.
