@@ -11,17 +11,21 @@ image::../images/image3.png[Architecture,width=100%,height=100%]
 *Figure 2: Webhook endpoint architecture on AWS*
 
 
-The Quick Start deployment sets up a serverless AWS Cloud environment that includes the following components.
+The Quick Start deployment sets up a serverless AWS Cloud environment that includes the following components:
 
-* An API Gateway endpoint to accept the webhook requests from Git.
-* Lambda function that processes the input git webhook payload received by the API Gateway and submits a build on AWS CodeBuild Project.
-* An AWS CodeBuild project to connect to the Git service, either over SSH or through the Git service’s endpoint. This AWS CodeBuild project will zip the code and upload it to Amazon S3.
+* An Amazon API Gateway endpoint that accepts webhook requests from Git.
+* A Lambda function that processes Git webhook requests and submits code to AWS CodeBuild.
+* AWS CodeBuild that connects to the Git repository and compresses and uploads code from it to an Amazon S3 bucket.
 
-*Important* The AWS CodeBuild project that is deployed by this Quick Start must be able to communicate with your Git repository. For example, you can use a SaaS-based Git service that the AWS CodeBuild can reach through the internet.
+IMPORTANT: The AWS CodeBuild project that is deployed by this Quick Start must be able to communicate with your Git repository, either over SSH or through the Git service’s endpoint. You can use a SaaS-based Git service to which AWS CodeBuild can connect over the internet.
 
-* An AWS KMS key to encrypt the SSH private key used to connect to the repository over SSH.
-* Two S3 buckets: One bucket stores the zipped contents of your Git repository, and the second bucket stores the AWS KMS-encrypted SSH private keys that are generated during stack creation. Note that the first bucket has versioning enabled, and all previous versions are retained indefinitely. If you’d like to manage the retention period for old versions, follow the instructions in the http://docs.aws.amazon.com/AmazonS3/latest/user-guide/create-lifecycle.html[Amazon S3 documentation].
-* Several IAM roles required for the Lambda functions and API Gateway. The inline permissions attached to these roles are scoped using the http://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege[least privilege] model.
-* Two Lambda-backed AWS CloudFormation custom resources. One resource generates an SSH keypair, encrypts it using AWS KMS, and stores it in Amazon S3. The second resource deletes the content of the two S3 buckets on stack deletion.
+* AWS Key Management Service (KMS) to encrypt the SSH private keys that AWS CodeBuild uses to connect to the Git repository over SSH.
+* Two S3 buckets, one for compressed Git repository code, and another for the AWS KMS-encrypted SSH private keys that are generated during stack creation. 
 
-NOTE: If you need backups, make sure to copy the S3 bucket contents before you delete the CloudFormation stack.
+NOTE: The first S3 bucket has versioning enabled. All previous versions are retained indefinitely. To modify the retention period, see http://docs.aws.amazon.com/AmazonS3/latest/user-guide/create-lifecycle.html[How do I create a lifecycle rule for an S3 bucket?].
+
+* Several IAM roles required by the Lambda function and API Gateway. The inline permissions attached to these roles are scoped using the http://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege[least privilege] model.
+
+* Two Lambda-backed AWS CloudFormation custom resources. One resource generates an SSH key pair, encrypts it using AWS KMS, and stores it in an S3 bucket. The second resource deletes the contents of the two S3 buckets when the AWS CloudFormation stack is deleted.
+
+WARNING: To ensure you have backups, copy the contents of the S3 buckets before deleting the AWS CloudFormation stack.
