@@ -15,7 +15,7 @@ The Quick Start deployment sets up a serverless AWS Cloud environment that inclu
 
 * An Amazon API Gateway endpoint to accept webhook requests from Git.
 * An AWS Lambda function to process Git webhook requests received by the API Gateway and initiate builds on AWS CodeBuild.
-* A CodeBuild project to compress and upload code from the Git repository to an Amazon S3 bucket.
+* CodeBuild to connect and clone the Git repository, then compress and upload its contents to an Amazon S3 bucket.
 
 IMPORTANT: The CodeBuild project that is deployed by this Quick Start must be able to connect to your Git repository, either over SSH or through the Git service endpoint. You can use a SaaS-based Git service to which AWS CodeBuild can connect over the internet.
 
