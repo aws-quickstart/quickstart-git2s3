@@ -5,7 +5,7 @@ Deploying this Quick Start builds the following environment in the AWS Cloud.
 [#architecture1]
 // .Quick Start architecture for {partner-product-short-name} on AWS
 [link=images/architecture_diagram.png]
-image::../images/image3.png[Architecture,width=100%,height=100%]
+image::../images/architecture_diagram.png[Architecture,width=100%,height=100%]
 
 
 *Figure 2: Webhook endpoint architecture on AWS*
@@ -13,14 +13,14 @@ image::../images/image3.png[Architecture,width=100%,height=100%]
 
 The Quick Start deployment sets up a serverless AWS Cloud environment that includes the following components:
 
-* An Amazon API Gateway endpoint to accept webhook requests from Git.
-* An AWS Lambda function to process Git webhook requests received by the API Gateway and initiate builds on AWS CodeBuild.
-* CodeBuild to connect and clone the Git repository, then compress and upload its contents to an Amazon S3 bucket.
+* An Amazon API Gateway endpoint to accept Git webhook requests.
+* An AWS Lambda function to process Git webhook requests and invoke AWS CodeBuild.
+* A CodeBuild project to compress and upload the Git repository code to an Amazon S3 bucket.
 
-IMPORTANT: The CodeBuild project that is deployed by this Quick Start must be able to connect to your Git repository, either over SSH or through the Git service endpoint. You can use a SaaS-based Git service to which AWS CodeBuild can connect over the internet.
+IMPORTANT: The CodeBuild project that is deployed by this Quick Start must be able to connect to your Git repository, either over SSH (Secure Shell) or through the Git service endpoint. For example, you can use a SaaS-based Git service to which AWS CodeBuild can connect over the internet.
 
-* AWS Key Management Service (KMS) to encrypt the SSH private keys that AWS CodeBuild uses to connect to the Git repository over SSH.
-* Two Amazon Simple Storage Service (S3) buckets, one to store the compressed contents of the Git repository, and another to store encrypted SSH keys. 
+* AWS Key Management Service (AWS KMS) to encrypt the private keys used to connect to the Git repository with SSH.
+* Two Amazon Simple Storage Service (S3) buckets, one to store the compressed Git repository code, and another to store the private SSH keys encrypted by AWS KMS. 
 
 NOTE: The first S3 bucket has versioning enabled, and all previous versions are retained indefinitely. To modify the retention period, see http://docs.aws.amazon.com/AmazonS3/latest/user-guide/create-lifecycle.html[How do I create a lifecycle rule for an S3 bucket?].
 
