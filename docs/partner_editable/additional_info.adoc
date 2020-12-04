@@ -14,7 +14,7 @@ To update the stack with an API secret, do the following:
 
 == Test the deployment
 
-Before putting a webhook into production, test your deployment.
+Before putting a webhook into production, test your deployment by doing the following:
 
 . Modify a file in your repository.
 
@@ -31,14 +31,18 @@ image:../images/image8.png[Figure 5,width=646,height=348]
 
 *Figure 4: Checking for S3 bucket updates after a commit*
 
-=== Best Practices
+== Best Practices
 
 The architecture built by this Quick Start supports AWS best practices for security.
 
-==== SSH Keys
+=== SSH Keys
 
-SSH keys are generated at stack creation, and are then encrypted using AWS KMS and the encrypted copy stored in Amazon S3. When you use the Git pull endpoint, the private key is fetched by the Lambda function, decrypted, and used to authenticate against your Git service to perform a clone of the repository. We don’t recommend (a) reusing SSH keys for multiple services, or (b) launching another instance of this Quick Start for each repository that you wish to clone to Amazon S3; this ensures that each repository uses unique keys.
+SSH keys are generated when the AWS CloudFormation stack is created. AWS KMS then encrypts the SSH keys stores them in an S3 bucket. When using the Git pull endpoint, the private SSH key is retrieved from the S3 bucket, decrypted, and used to authenticate your Git service before cloning the repository. 
 
-==== Webhook Security
+We don’t recommend sharing SSH keys among multiple services, or launching another instance of this Quick Start for to clone and store another repository in Amazon S3. Each repository should use unique SSH keys.
 
-Different Git services provide varying ways to authenticate against an endpoint. The Git pull endpoint supports webhook secrets (used by GitHub Enterprise, GitLab, and other Git repository managers) as well as source IP address whitelisting. The zip download endpoint supports personal access tokens (as used by GitHub Enterprise and GitLab) and OAuth2 (used by Bitbucket). We recommend that you set up at least one of these security mechanisms to protect your webhook API endpoint. For more information about how this Quick Start utilizes these mechanisms, see the parameters in the link:#deployment-steps[Deployment Steps] section of this guide. For product-specific guidance on how to configure these security mechanisms, refer to your Git product’s documentation.
+=== Webhook Security
+
+Different Git services provide varying ways to authenticate against an endpoint. The Git pull endpoint supports webhook secrets (used by GitHub Enterprise, GitLab, and other Git repository managers) as well as source IP address whitelisting. The zip download endpoint supports personal access tokens (as used by GitHub Enterprise and GitLab) and OAuth2 (used by Bitbucket). We recommend that you set up at least one of these security mechanisms to protect your webhook API endpoint. 
+
+For more information about how this Quick Start utilizes these mechanisms, see the parameters in the link:#deployment-steps[Deployment steps] section of this guide. For product-specific guidance on how to configure these security mechanisms, refer to your Git product’s documentation.
