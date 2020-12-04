@@ -1,23 +1,20 @@
-==== Adding an API Secret After Deployment
+== Adding an API secret after deployment
 
-In some cases, your Git service may provide security mechanisms like API secrets when you create the webhook. In these cases, you can launch the Quick Start with a blank parameter value for the *API Secret* parameter, and then update the stack to provide the value of the parameter. Follow these steps:
+You can launch this Quick Start without providing an *API Secret* parameter. If your Git service provides an API secret when you create a webhook, you can update the stack with the API secret later.  
 
-. In the https://console.aws.amazon.com/cloudformation[AWS Cloudformation console], select the stack.
+To update the stack with an API secret, do the following:
 
-[arabic, start=2]
-. Choose *Actions*, and then choose *Update Stack*.
-. Keep the default to use the current template.
-. On the *Specify Details* page, change the *API Secret* parameter setting.
-. Choose *Next* twice.
-
-[arabic, start=10]
-. Under *Capabilities*, select the check box to acknowledge that the template will create IAM resources, and then choose *Update*.
-
-When the status is *UPDATE_COMPLETE*, the stack has been updated with the webhook secret you specified for security.
+. In the https://console.aws.amazon.com/cloudformation[AWS Cloudformation console], select the stack you want to update.
+. In the stack details pane, choose *Update*.
+. Choose *Use current template*.
+. On the *Specify stack details* page, change the *API Secret* parameter setting, then choose *Next*.
+. On the *Configure stack options* page, choose *Next*.
+. Select *I acknowledge that this template may create IAM resources*.
+. Choose *Update stack*. When the status is *UPDATE_COMPLETE*, the stack is updated with the API secret.
 
 == Test the deployment
 
-Before putting the webhook into production, you should test your deployment.
+Before putting a webhook into production, test your deployment.
 
 . Modify a file in your repository.
 
@@ -28,7 +25,7 @@ image:../images/image6.png[../Desktop/Screen_Shot_2017-07-15_at_11_35_57_AM.png,
 image:../images/image7.png[Figure 4,width=648,height=198]
 
 [start=2]
-. Wait a few minutes and check your S3 bucket for a new (or updated) object with a key that matches your repository path.
+. Wait a few minutes, then check your S3 bucket for a new (or updated) object with a key that matches your repository path.
 
 image:../images/image8.png[Figure 5,width=646,height=348]
 
