@@ -3,41 +3,41 @@ Description: Git Webhooks to clone repository contents to S3. For integrating 3r
   party git products with AWS Services like CodePipeline/CodeBuild (qs-1nfhrd9bh)
 Metadata:
   QuickStartDocumentation:
-    EntrypointName: "Launch Quick Start"
+    EntrypointName: Deploying into your selected Region
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
-          default: General Settings
+          default: General settings
         Parameters:
           - OutputBucketName
           - CustomDomainName
       - Label:
-          default: Git Pull Settings
+          default: Git pull settings
         Parameters:
           - ApiSecret
           - AllowedIps
           - ExcludeGit
       - Label:
-          default: AWS Quick Start Configuration
+          default: AWS Quick Start configuration
         Parameters:
           - QSS3BucketName
           - QSS3BucketRegion
           - QSS3KeyPrefix
     ParameterLabels:
       AllowedIps:
-        default: Allowed IPs
+        default: Allowed IP addresses
       ApiSecret:
-        default: API Secret
+        default: API secret
       CustomDomainName:
-        default: Custom Domain Name
+        default: Custom domain name
       OutputBucketName:
-        default: Output S3 Bucket Name
+        default: Output S3 bucket name
       QSS3BucketName:
-        default: Quick Start S3 Bucket Name
+        default: Quick Start S3 bucket name
       QSS3BucketRegion:
-        default: Quick Start S3 bucket region
+        default: Quick Start S3 bucket Region
       QSS3KeyPrefix:
-        default: Quick Start S3 Key Prefix
+        default: Quick Start S3 key prefix
       ExcludeGit:
         default: Exclude Git
 Parameters:
@@ -47,25 +47,23 @@ Parameters:
     Type: String
     Default: 18.205.93.0/25,18.234.32.128/25,13.52.5.0/25
   ApiSecret:
-    Description: 'gitpull method only. WebHook Secrets for use with GitHub Enterprise
-      and GitLab. If a secret is matched IP range authentication is bypassed. Cannot
-      contain: , \ "'
+    Description: 'gitpull method only. WebHook secrets for use with GitHub Enterprise
+      and GitLab. If a secret is matched, IP range authentication is bypassed. Cannot
+      contain commas (,), backward slashes (\), or quotes (").
     Type: String
     Default: ''
     NoEcho: 'true'
   CustomDomainName:
-    Description: Use a custom domain name for the webhook endpoint, if left blank
-      API Gateway will create a domain name for you
+    Description: Domain name for the webhook endpoint. If left blank, API Gateway will create a domain name for you.
     Type: String
     Default: ''
   OutputBucketName:
-    Description: 'OPTIONAL: Bucket Name where the zip file output should be placed,
-      if left blank a bucket name will be automatically generated.'
+    Description: (Optional) Name for the S3 bucket where the .zip file is stored. If left blank, an S3 bucket name is created automatically.
     Type: String
     Default: ''
   QSS3BucketName:
     AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
-    ConstraintDescription: Quick Start bucket name can include numbers, lowercase
+    ConstraintDescription: Quick Start S3 bucket name can include numbers, lowercase
       letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen
       (-).
     Default: aws-quickstart
@@ -75,7 +73,7 @@ Parameters:
     Type: String
   QSS3BucketRegion:
     Default: 'us-east-1'
-    Description: 'The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.'
+    Description: AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. Required when using your own S3 bucket.
     Type: String
   QSS3KeyPrefix:
     AllowedPattern: ^[0-9a-zA-Z-/]*$
@@ -87,23 +85,23 @@ Parameters:
       forward slash (/).
     Type: String
   VPCId:
-    Description: Id of the VPC the DL Zip lambda should run in
+    Description: ID of the VPC in which the .zip download Lambda function runs.
     Type: String
     Default: ''
   VPCCidrRange:
-    Description: CIDR range of the VPC
+    Description: CIDR range of the VPC.
     Type: String
     Default: ''
   SubnetIds:
-    Description: SubnetIds the DL Zip lambda should run in
+    Description: SubnetIDs in which the .zip download Lambda function runs.
     Type: CommaDelimitedList
     Default: ''
   ScmHostnameOverride:
-    Description: Hostname to override the incoming json request with
+    Description: Host name to override the incoming JSON request.
     Type: String
     Default: ''
   ExcludeGit:
-    Description: Choose True to include the .git directory in the zip file or false to not include
+    Description: Include the .git directory in the .zip file (True), or do not include (False).
     Type: String
     Default: 'True'
     AllowedValues: ['True', 'False']
@@ -188,7 +186,7 @@ Resources:
   CopyZipsFunction:
     Type: AWS::Lambda::Function
     Properties:
-      Description: Copies objects from a source S3 bucket to a destination
+      Description: Copies objects from a source S3 bucket to a destination.
       Handler: index.handler
       Runtime: python3.7
       Role: !GetAtt 'CopyZipsRole.Arn'
@@ -272,8 +270,7 @@ Resources:
   KMSKey:
     Type: AWS::KMS::Key
     Properties:
-      Description: git CodePipeline integration, used to encrypt/decrypt ssh keys
-        stored in S3
+      Description: Key used to encrypt and decrypt SSH keys stored in S3. 
       KeyPolicy:
         Version: '2012-10-17'
         Statement:
@@ -718,7 +715,7 @@ Resources:
     Condition: ShouldRunInVPC
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Security Group to allow the lambda to access the git service
+      GroupDescription: Security Group to allow the Lambda function to access the Git service.
       SecurityGroupEgress:
         - CidrIp: !Ref 'VPCCidrRange'
           FromPort: 0
