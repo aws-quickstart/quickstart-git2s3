@@ -26,6 +26,6 @@ NOTE: The first S3 bucket has versioning enabled, and all previous versions are 
 
 * AWS Identity and Access Management (IAM) roles required by Lambda and API Gateway. The inline permissions attached to these roles are scoped using the http://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege[least privilege] model.
 
-* Two Lambda-backed AWS CloudFormation custom resources. One resource generates an SSH key pair, encrypts it using AWS KMS, and stores it in an S3 bucket. The second resource deletes the contents of the two S3 buckets when the AWS CloudFormation stack is deleted.
+* Two Lambda-backed AWS CloudFormation custom resources. One resource generates an SSH key pair, encrypts it using AWS KMS, and stores it in an S3 bucket. The second resource deletes the contents of the two S3 buckets when you delete the CloudFormation stack.
 
 WARNING: If you need backups, copy the contents of the S3 buckets before deleting the AWS CloudFormation stack.
