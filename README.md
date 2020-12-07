@@ -12,7 +12,7 @@ The Quick Start includes an AWS CloudFormation template that automates the deplo
 
 ![Quick Start architecture for implementing webhooks on AWS](./docs/images/image3.png)
 
-For implementation details, deployment instructions, and customization options, see the [deployment guide](https://fwd.aws/QQBRr).
+For implementation details, deployment instructions, and customization options, see the [deployment guide](https://aws-quickstart.github.io/quickstart-git2s3/).
 
 To post feedback, submit feature ideas, or report bugs, use the **Issues** section of this GitHub repo.
 If you'd like to submit code for this Quick Start, please review the [AWS Quick Start Contributor's Kit](https://aws-quickstart.github.io/). 
