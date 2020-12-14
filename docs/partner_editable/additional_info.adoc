@@ -18,18 +18,29 @@ Before putting a webhook into production, test your deployment by doing the foll
 
 . Modify a file in your repository.
 
-image:../images/image6.png[../Desktop/Screen_Shot_2017-07-15_at_11_35_57_AM.png,width=529,height=21]
-
-. Commit and push the changes.
-
-image:../images/image7.png[Figure 4,width=648,height=198]
+:xrefstyle: short
+[#testfile]
+.Modifying a file
+[link=images/testfile.png]
+image::../images/testfile.png[testfile,width=529,height=21]
 
 [start=2]
+. Commit and push the changes.
+
+:xrefstyle: short
+[#commit_push]
+.Committing and pushing changes
+[link=images/commit_push.png]
+image::../images/commit_push.png[commit_push,width=648,height=198]
+
+[start=3]
 . Wait a few minutes, then check your S3 bucket for a new (or updated) object with a key that matches your repository path.
 
-image:../images/image8.png[Figure 5,width=646,height=348]
-
-*Figure 4: Checking for S3 bucket updates after a commit*
+:xrefstyle: short
+[#S3_new_object]
+.Checking for a new or updated object in your S3 bucket after a commit
+[link=images/S3_new_object.png]
+image::../images/S3_new_object.png[S3_new_object,width=646,height=348]
 
 == Best Practices
 

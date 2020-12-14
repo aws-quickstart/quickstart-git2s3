@@ -1,10 +1,12 @@
 
-As Figure 1 illustrates, when code is pushed to your repository, the Git service sends an HTTPS POST to the endpoints configured by the Quick Start. The POST contains JSON data about the push operation, including the repository details that the Quick Start uses to fetch the latest version of your code.
+:xrefstyle: short
+As <<using_webhooks>> illustrates, when code is pushed to your repository, the Git service sends an HTTPS POST request to the endpoints configured by the Quick Start. The POST request contains JavaScript Object Notation (JSON) data about the push operation, including the repository details that the Quick Start uses to fetch the latest version of your code.
 
-image:../images/image2.png[image,width=647,height=266]
+[#using_webhooks]
+.Using webhooks for code commits
+[link=images/using_webhooks.png]
+image::../images/using_webhooks.png[using_webhooks,width=647,height=266]
 
-*Figure 1: Using webhooks for code commits*
-
-This Quick Start implements the required code to trigger a Lambda function and an AWS CodeBuild project working together that zips up the code in your repository and places the .zip file in Amazon S3. When this function is triggered by a Git webhook, it provides a convenient way to bridge Git services with AWS services like AWS CodePipeline and AWS CodeBuild, so that builds and pipeline executions occur automatically when you commit your code to a Git repository. Linking your existing code repositories to the AWS Cloud in this way enables your code to be continuously integrated, tested, built, and deployed on the AWS Cloud with each change.
+This Quick Start provides a deploys an AWS Lambda function and an AWS CodeBuild project to zip the code in your Git repository and place the .zip file in an Amazon Simple Storage Service (Amazon S3) bucket. The deployment provides the code to trigger builds and pipeline executions automatically when you commit changes to a Git repository. With this deployment, your code is continuously integrated, tested, built, and deployed on the AWS Cloud with each change.
 
 NOTE: The AWS CodeBuild Project deployed by this Quick Start must be able to communicate with your Git repository. For example, you can use a SaaS-based Git service that AWS CodeBuild can reach through the internet.
