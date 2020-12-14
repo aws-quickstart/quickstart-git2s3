@@ -22,11 +22,11 @@ NOTE: You are responsible for the cost of the AWS services used while running th
 
 NOTE: You can also https://fwd.aws/wr8Gg[download the template] to use it as a starting point for your own implementation.
 
-=== Configure Your Git repository
+=== Configuring Git services
+
+After deploying the Quick Start, set up your webhook by configuring your Git service to use the S3 object as a source. To do this, you need the *GitPullWebHookApi* and *PublicSSHKey*, which display on the *Outputs* tab on the AWS CloudFormation console.
 
 :xrefstyle: short
-After you have successfully deployed the Quick Start, you can configure the service that will use the S3 object as a source. <<outputs_tab>> shows the *Outputs* tab in the AWS CloudFormation console, which displays the outputs for configuring your Git webhook.
-
 [#outputs_tab]
 .AWS CloudFormation console Outputs tab
 [link=images/outputs_tab.png]
@@ -35,9 +35,9 @@ image::../images/outputs_tab.png[outputs_tab,width=701,height=222]
 * *GitPullWebHookApi* is the webhook endpoint to use if you opt for the Git pull method described in the link:#webhook-endpoints[Webhook Endpoints] section of this guide.
 * *PublicSSHKey* is the public SSH key that you use to connect to your repository if you’re using the Git pull endpoint. This key can be configured as a read-only machine user or as a deployment key in your Git service.
 
-The exact process to set up webhooks differs from service to service. For step-by-step instructions, consult your Git service’s documentation.
+The instructions for setting up webhooks vary by Git service. For more information, see your Git service documentation.
 
-=== Configure an AWS service to connect to the S3 object
+=== Configuring AWS services
 
 After deploying the Quick Start, configure the AWS services in your workload to use the S3 object as a source. 
 

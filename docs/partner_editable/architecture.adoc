@@ -4,7 +4,7 @@ Deploying this Quick Start builds the following environment in the AWS Cloud.
 
 :xrefstyle: short
 [#architecture_diagram]
-.Git Webhooks on AWS Quick Start architecture
+.Git webhooks with AWS services Quick Start architecture
 [link=images/architecture_diagram.png]
 image::../images/architecture_diagram.png[architecture_diagram,width=100%,height=100%]
 
