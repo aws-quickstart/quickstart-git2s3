@@ -19,7 +19,7 @@ If your commits are not being pushed through to Amazon S3, check the following:
 
 * Check the AWS CodeBuild project logs for errors. These are stored in Amazon CloudWatch Logs. To access the logs, open the endpoint’s CodeBuild Build Project in the AWS console, select a *Build run* and click on the hyperlink and navigate to the *Build logs* tab to see the build execution logs. For more information, see https://docs.aws.amazon.com/codebuild/latest/userguide/troubleshooting.html[Troubleshooting AWS CodeBuild^] on the AWS website.
 
-== Additional Resources
+== Additional resources
 
 === AWS services
 
@@ -28,9 +28,11 @@ If your commits are not being pushed through to Amazon S3, check the following:
 * https://aws.amazon.com/documentation/apigateway/[Amazon API Gateway]
 * https://aws.amazon.com/documentation/s3/[Amazon S3]
 * https://aws.amazon.com/documentation/codepipeline/[AWS CodePipeline]
+** http://docs.aws.amazon.com/codepipeline/latest/userguide/tutorials-simple-s3.html[Tutorial: Create a simple pipeline (S3 bucket)]
 * https://aws.amazon.com/documentation/codebuild/[AWS CodeBuild]
+** http://docs.aws.amazon.com/codebuild/latest/userguide/getting-started.html[Getting started with AWS CodeBuild using the console]
 
-=== Git webhooks
+=== Webhooks
 
 * https://developer.github.com/v3/repos/hooks/[Webhooks on GitHub Developer blog]
 * https://confluence.atlassian.com/bitbucket/manage-webhooks-735643732.html[Manage webhooks on Atlassian Bitbucket Support]
