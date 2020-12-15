@@ -7,6 +7,6 @@ As <<using_webhooks>> illustrates, when code is pushed to your repository, the G
 [link=images/using_webhooks.png]
 image::../images/using_webhooks.png[using_webhooks,width=647,height=266]
 
-This Quick Start provides a deploys an AWS Lambda function and an AWS CodeBuild project to zip the code in your Git repository and place the .zip file in an Amazon Simple Storage Service (Amazon S3) bucket. The deployment provides the code to trigger builds and pipeline executions automatically when you commit changes to a Git repository. With this deployment, your code is continuously integrated, tested, built, and deployed on the AWS Cloud with each change.
+This Quick Start deploys an AWS Lambda function and an AWS CodeBuild project to zip the code in your Git repository and place the .zip file in an Amazon Simple Storage Service (Amazon S3) bucket. The deployment provides the code to trigger builds and pipeline executions automatically when you commit changes to a Git repository. With this deployment, your code is continuously integrated, tested, built, and deployed on the AWS Cloud with each change.
 
-NOTE: The AWS CodeBuild Project deployed by this Quick Start must be able to communicate with your Git repository. For example, you can use a SaaS-based Git service that AWS CodeBuild can reach through the internet.
+NOTE: The AWS CodeBuild Project deployed by this Quick Start must be able to communicate with your Git repository using a Git service. For example, you can use a SaaS-based Git service that AWS CodeBuild can reach through the internet.

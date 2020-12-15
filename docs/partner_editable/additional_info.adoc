@@ -42,7 +42,7 @@ image::../images/commit_push.png[commit_push,width=648,height=198]
 [link=images/S3_new_object.png]
 image::../images/S3_new_object.png[S3_new_object,width=646,height=348]
 
-== Best Practices
+== Best practices
 
 The architecture built by this Quick Start supports AWS best practices for security.
 
@@ -52,7 +52,7 @@ SSH keys are generated when the AWS CloudFormation stack is created. AWS KMS the
 
 We don’t recommend sharing SSH keys among multiple services, or launching another instance of this Quick Start for to clone and store another repository in Amazon S3. Each repository should use unique SSH keys.
 
-=== Webhook Security
+=== Webhook security
 
 Git services provide different ways to authenticate against an endpoint. The Git pull endpoint supports webhook secrets (used by GitHub Enterprise, GitLab, and other Git repository managers) and source IP address whitelisting. The .zip download endpoint supports personal access tokens (as used by GitHub Enterprise and GitLab) and OAuth2 (used by Bitbucket). We recommend that you set up at least one of these security mechanisms to protect your webhook API endpoint. 
 
