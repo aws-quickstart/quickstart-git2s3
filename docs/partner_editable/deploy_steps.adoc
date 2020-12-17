@@ -24,18 +24,20 @@ NOTE: You can also https://fwd.aws/wr8Gg[download the template] to use it as a s
 
 === Configuring Git services
 
-After deploying the Quick Start, set up your webhook by configuring your Git service to use the S3 object as a source. To do this, you need the *GitPullWebHookApi* and *PublicSSHKey*, which display on the *Outputs* tab on the AWS CloudFormation console.
+After deploying the Quick Start, set up a webhook in the Git repository. 
+
+To configure a link:#webhook-endpoints[git pull endpoint], you need the *GitPullWebHookApi* and *PublicSSHKey*, which display on the *Outputs* tab on the AWS CloudFormation console.
 
 :xrefstyle: short
 [#outputs_tab]
-.AWS CloudFormation console Outputs tab
+.Outputs tab on the AWS CloudFormation console
 [link=images/outputs_tab.png]
 image::../images/outputs_tab.png[outputs_tab,width=701,height=222]
 
-* *GitPullWebHookApi* is the webhook endpoint to use if you opt for the Git pull method described in the link:#webhook-endpoints[Webhook Endpoints] section of this guide.
-* *PublicSSHKey* is the public SSH key that you use to connect to your repository if you’re using the Git pull endpoint. This key can be configured as a read-only machine user or as a deployment key in your Git service.
+* *GitPullWebHookApi* is the URL endpoint that receives the HTTP POST request from the Git service.
+* *PublicSSHKey* is the public SSH key used to connect to your Git repository. This key can be configured as a read-only machine user or as a deployment key in your Git repository.
 
-The instructions for setting up webhooks vary by Git service. For more information, see your Git service documentation.
+The instructions for setting up webhooks and deploy keys vary by Git service. For more information, see your Git service documentation.
 
 === Configuring AWS services
 
