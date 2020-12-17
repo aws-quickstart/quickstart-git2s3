@@ -1,6 +1,6 @@
 == Adding an API secret after deployment
 
-You can launch this Quick Start without providing an *API Secret* parameter. If your Git service provides an API secret when you create a webhook, you can update the stack with the API secret later.  
+You can launch this Quick Start without an *API Secret* parameter. If your Git service provides an API secret when you create a webhook, you can update the stack with the API secret later.  
 
 To update the stack with an API secret, do the following:
 
@@ -17,23 +17,7 @@ To update the stack with an API secret, do the following:
 Before putting a webhook into production, test your deployment by doing the following:
 
 . Modify a file in your repository.
-
-:xrefstyle: short
-[#testfile]
-.Modifying a file
-[link=images/testfile.png]
-image::../images/testfile.png[testfile,width=529,height=21]
-
-[start=2]
 . Commit and push the changes.
-
-:xrefstyle: short
-[#commit_push]
-.Committing and pushing changes
-[link=images/commit_push.png]
-image::../images/commit_push.png[commit_push,width=648,height=198]
-
-[start=3]
 . Wait a few minutes, then check your S3 bucket for a new (or updated) object with a key that matches your repository path.
 
 :xrefstyle: short
@@ -48,7 +32,9 @@ The architecture built by this Quick Start supports AWS best practices for secur
 
 === SSH Keys
 
-SSH keys are generated when the AWS CloudFormation stack is created. AWS KMS then encrypts the SSH keys and stores them in an S3 bucket. When using the Git pull endpoint, the private SSH key is retrieved from the S3 bucket, decrypted, and used to authenticate your Git service before cloning the repository. 
+This Quick Start creates SSH keys with AWS CloudFormation stack. AWS KMS encrypts the SSH keys and stores them in an S3 bucket. 
+
+With the Git pull endpoint method, AWS CodeBuild retrieves and decrypts the private SSH key and uses it to authenticate your Git service before cloning the repository.
 
 We don’t recommend sharing SSH keys among multiple services, or launching another instance of this Quick Start for to clone and store another repository in Amazon S3. Each repository should use unique SSH keys.
 

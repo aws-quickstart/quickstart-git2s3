@@ -26,3 +26,26 @@ NOTE: The first S3 bucket has versioning enabled, and all previous versions are 
 * Two Lambda-backed AWS CloudFormation custom resources. One resource generates an SSH key pair, encrypts it using AWS KMS, and stores it in an S3 bucket. The second resource deletes the contents of the two S3 buckets when you delete the CloudFormation stack.
 
 WARNING: If you need backups, copy the contents of the S3 buckets before deleting the AWS CloudFormation stack.
+
+== Webhook endpoints
+
+This Quick Start deploys two endpoints for connecting to your Git repository. Each endpoint has different benefits. Choose the endpoint that best fits your use case, repository size, and other requirements.
+
+[cols="1,2,3a"]
+|===
+Endpoint | Description | Benefits
+
+| Zip download | Uses the Git service's HTTP API to download a .zip file of the entire repository. | 
+
+* No need for external libraries.
+* Smaller Lambda function code.
+* Large repository size limit (500 MB).
+
+| Git pull | Uses SSH to pull from the Git repository. The repository contents are then zipped and uploaded to Amazon S3. |
+
+* Efficient for repositories with a high volume of commits, because each time the API is triggered, it downloads only changed files.
+* Suitable for any Git server that supports webhooks and SSH. Does not depend on personal access tokens or OAuth2.
+* More extensible because it uses a standard Git library.
+
+|===
+

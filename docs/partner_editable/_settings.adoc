@@ -1,13 +1,13 @@
 // Do not change this first attribute. Do change the others.
 :quickstart-team-name: AWS Quick Start team
 :quickstart-project-name: quickstart-git2s3
-:partner-product-name: Git Webhooks
+:partner-product-name: Git webhooks
 // For the following attribute, if you have no short name, enter the same name as partner-product-name.
-:partner-product-short-name: Git Webhooks
+:partner-product-short-name: Git webhooks
 // If there's no partner, comment partner-company-name and partner-contributors.
 // :partner-company-name: Example Company Name, Ltd.
-:doc-month: December
-:doc-year: 2020
+:doc-month: January
+:doc-year: 2021
 // For the following two "contributor" attributes, if the partner agrees to include names in the byline, 
 // enter names for both partner-contributors and quickstart-contributors. 
 // Otherwise, delete all placeholder names: everything preceding "{partner-company-name}"  
