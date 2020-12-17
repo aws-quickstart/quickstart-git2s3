@@ -3,7 +3,7 @@ Description: Git Webhooks to clone repository contents to S3. For integrating 3r
   party git products with AWS Services like CodePipeline/CodeBuild (qs-1nfhrd9bh)
 Metadata:
   QuickStartDocumentation:
-    EntrypointName: Deploying into your selected Region
+    EntrypointName: Deploy into your selected Region
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -42,12 +42,12 @@ Metadata:
         default: Exclude Git
 Parameters:
   AllowedIps:
-    Description: gitpull method only. Comma seperated list of IP CIDR blocks for source
-      IP authentication. The BitBucket Cloud IP ranges are provided as defaults.
+    Description: Gitpull method only. Comma-separated list of IP CIDR blocks for source
+      IP authentication. BitBucket Cloud IP ranges are provided as defaults.
     Type: String
     Default: 18.205.93.0/25,18.234.32.128/25,13.52.5.0/25
   ApiSecret:
-    Description: 'gitpull method only. WebHook secrets for use with GitHub Enterprise
+    Description: 'Gitpull method only. WebHook secrets for use with GitHub Enterprise
       and GitLab. If a secret is matched, IP range authentication is bypassed. Cannot
       contain commas (,), backward slashes (\), or quotes (").
     Type: String
@@ -85,7 +85,7 @@ Parameters:
       forward slash (/).
     Type: String
   VPCId:
-    Description: ID of the VPC in which the .zip download Lambda function runs.
+    Description: ID of the VPC in which the Lambda function runs.
     Type: String
     Default: ''
   VPCCidrRange:
@@ -93,7 +93,7 @@ Parameters:
     Type: String
     Default: ''
   SubnetIds:
-    Description: SubnetIDs in which the .zip download Lambda function runs.
+    Description: SubnetIDs in which the Lambda function runs.
     Type: CommaDelimitedList
     Default: ''
   ScmHostnameOverride:
