@@ -14,11 +14,9 @@ The Quick Start deployment sets up a serverless AWS Cloud environment that inclu
 * An AWS Lambda function to process Git webhook requests and invoke AWS CodeBuild.
 * AWS Identity and Access Management (IAM) roles required by Lambda and API Gateway. The inline permissions attached to these roles are scoped using the http://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege[least privilege] model.
 * A CodeBuild project to fetch, zip, and upload Git repository code to Amazon Simple Storage Service (Amazon S3).
-* AWS Key Management Service (AWS KMS) to encrypt private keys used to connect to the Git repository with SSH.
+* AWS Key Management Service (AWS KMS) to encrypt private keys used to connect to the Git repository using SSH (Secure Shell).
 * Two Amazon Simple Storage Service (S3) buckets, one for Git repository contents, and the other for private SSH keys encrypted by AWS KMS. 
 * Two Lambda-backed AWS CloudFormation custom resources. One generates an SSH key pair, encrypts it using AWS KMS, and uploads it to Amazon S3. The second deletes the contents of the S3 buckets when you delete the CloudFormation stack. If you need backups, ensure that you copy S3 bucket contents before deleting the stack.
-
-The CodeBuild project must be able to connect to your Git repository using one of the link:#_webhook_endpoints[webhook endpoints] this Quick Start deploys. For example, you can use a SaaS-based Git service to which AWS CodeBuild can connect over the internet.
 
 The S3 bucket for Git contents that this Quick Start deploys has versioning enabled, and all previous versions are retained indefinitely. To modify the retention period, see http://docs.aws.amazon.com/AmazonS3/latest/user-guide/create-lifecycle.html[How do I create a lifecycle rule for an S3 bucket?].
 
@@ -31,7 +29,7 @@ The following table compares the benefits of the two endpoints deployed by this 
 |===
 Endpoint | Description | Benefits
 
-| Zip download | Use your Git service's HTTP API to download a .zip file of the entire current repository version. | 
+| Zip download | Use your Git service's HTTP API to download a .zip file of the current version of the entire repository. | 
 
 * No need for external libraries.
 * Smaller Lambda function code.
