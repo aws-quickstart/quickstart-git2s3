@@ -10,38 +10,34 @@ image::../images/architecture_diagram.png[architecture_diagram,width=100%,height
 
 The Quick Start deployment sets up a serverless AWS Cloud environment that includes the following components:
 
-* An Amazon API Gateway endpoint to accept Git webhook requests.
+* An Amazon API Gateway endpoint to receive Git webhook requests and forward requests to AWS Lambda.
 * An AWS Lambda function to process Git webhook requests and invoke AWS CodeBuild.
-* A CodeBuild project to compress and upload Git repository code to an Amazon S3 bucket.
-
-IMPORTANT: The CodeBuild project that is deployed by this Quick Start must be able to connect to your Git repository, either over SSH (Secure Shell) or through the Git service endpoint. For example, you can use a SaaS-based Git service to which AWS CodeBuild can connect over the internet.
-
-* AWS Key Management Service (AWS KMS) to encrypt the private keys used to connect to the Git repository with SSH.
-* Two Amazon Simple Storage Service (S3) buckets, one to store the compressed Git repository code, and another to store the private SSH keys encrypted by AWS KMS. 
-
-NOTE: The first S3 bucket has versioning enabled, and all previous versions are retained indefinitely. To modify the retention period, see http://docs.aws.amazon.com/AmazonS3/latest/user-guide/create-lifecycle.html[How do I create a lifecycle rule for an S3 bucket?].
-
 * AWS Identity and Access Management (IAM) roles required by Lambda and API Gateway. The inline permissions attached to these roles are scoped using the http://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege[least privilege] model.
+* A CodeBuild project to fetch, zip, and upload Git repository code to Amazon Simple Storage Service (Amazon S3).
+* AWS Key Management Service (AWS KMS) to encrypt private keys used to connect to the Git repository with SSH.
+* Two Amazon Simple Storage Service (S3) buckets, one for Git repository contents, and the other for private SSH keys encrypted by AWS KMS. 
+* Two Lambda-backed AWS CloudFormation custom resources. One generates an SSH key pair, encrypts it using AWS KMS, and uploads it to Amazon S3. The second deletes the contents of the S3 buckets when you delete the CloudFormation stack. If you need backups, ensure that you copy S3 bucket contents before deleting the stack.
 
-* Two Lambda-backed AWS CloudFormation custom resources. One resource generates an SSH key pair, encrypts it using AWS KMS, and stores it in an S3 bucket. The second resource deletes the contents of the two S3 buckets when you delete the CloudFormation stack.
+The CodeBuild project must be able to connect to your Git repository using one of the link:#_webhook_endpoints[webhook endpoints] this Quick Start deploys. For example, you can use a SaaS-based Git service to which AWS CodeBuild can connect over the internet.
 
-WARNING: If you need backups, copy the contents of the S3 buckets before deleting the AWS CloudFormation stack.
+The S3 bucket for Git contents that this Quick Start deploys has versioning enabled, and all previous versions are retained indefinitely. To modify the retention period, see http://docs.aws.amazon.com/AmazonS3/latest/user-guide/create-lifecycle.html[How do I create a lifecycle rule for an S3 bucket?].
 
 == Webhook endpoints
+A webhook endpoint is the URL to which your Git service sends HTTP POST requests when commits are pushed to your Git repository.
 
-This Quick Start deploys two endpoints for connecting to your Git repository. Each endpoint has different benefits. Choose the endpoint that best fits your use case, repository size, and other requirements.
+The following table compares the benefits of the two endpoints deployed by this Quick Start. Use the endpoint that best fits your use case, repository size, and Git workflow.
 
 [cols="1,2,3a"]
 |===
 Endpoint | Description | Benefits
 
-| Zip download | Uses the Git service's HTTP API to download a .zip file of the entire repository. | 
+| Zip download | Use your Git service's HTTP API to download a .zip file of the entire current repository version. | 
 
 * No need for external libraries.
 * Smaller Lambda function code.
 * Large repository size limit (500 MB).
 
-| Git pull | Uses SSH to pull from the Git repository. The repository contents are then zipped and uploaded to Amazon S3. |
+| Git pull | Use SSH to pull, zip, and upload changed files from your Git repository to Amazon S3. |
 
 * Efficient for repositories with a high volume of commits, because each time the API is triggered, it downloads only changed files.
 * Suitable for any Git server that supports webhooks and SSH. Does not depend on personal access tokens or OAuth2.
@@ -49,3 +45,4 @@ Endpoint | Description | Benefits
 
 |===
 
+NOTE: When configuring a webhook using the Git pull endpoint, you need the the *GitPullWebHookApi* and *PublicSSHKey*. For more information, see link:#_configure_git_services[Configuring Git services] later in this guide.
