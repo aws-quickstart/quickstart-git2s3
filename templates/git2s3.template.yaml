@@ -1,9 +1,9 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Git Webhooks to clone repository contents to S3. For integrating 3rd
-  party git products with AWS Services like CodePipeline/CodeBuild (qs-1nfhrd9bh)
+Description: Git webhooks to clone and store a Git repository in S3. Used to integrate Git services
+  with AWS services like AWS CodePipeline, AWS CodeBuild, and AWS CodeDeploy. (qs-1nfhrd9bh)
 Metadata:
   QuickStartDocumentation:
-    EntrypointName: Deploy into your selected Region
+    EntrypointName: Deploy into your selected Region.
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -42,13 +42,11 @@ Metadata:
         default: Exclude Git
 Parameters:
   AllowedIps:
-    Description: Gitpull method only. Comma-separated list of IP CIDR blocks for source
-      IP authentication. BitBucket Cloud IP ranges are provided as defaults.
+    Description: Comma-separated list of IP CIDR blocks for source IP authentication. BitBucket Cloud IP ranges provided by default.
     Type: String
     Default: 18.205.93.0/25,18.234.32.128/25,13.52.5.0/25
   ApiSecret:
-    Description: 'Gitpull method only. WebHook secrets for use with GitHub Enterprise
-      and GitLab. If a secret is matched, IP range authentication is bypassed. Cannot
+    Description: WebHook secrets for use with GitHub Enterprise and GitLab. If a secret is matched, IP range authentication is bypassed. Cannot
       contain commas (,), backward slashes (\), or quotes (").
     Type: String
     Default: ''
@@ -58,18 +56,15 @@ Parameters:
     Type: String
     Default: ''
   OutputBucketName:
-    Description: (Optional) Name for the S3 bucket where the .zip file is stored. If left blank, an S3 bucket name is created automatically.
+    Description: (Optional) Name for the S3 bucket where the Git repository .zip file is stored. If left blank, an S3 bucket name is created automatically.
     Type: String
     Default: ''
   QSS3BucketName:
     AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
-    ConstraintDescription: Quick Start S3 bucket name can include numbers, lowercase
-      letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen
+    ConstraintDescription: Quick Start S3 bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen
       (-).
     Default: aws-quickstart
-    Description: S3 bucket name for the Quick Start assets. Quick Start bucket name
-      can include numbers, lowercase letters, uppercase letters, and hyphens (-).
-      It cannot start or end with a hyphen (-).
+    Description: S3 bucket name for the Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).
     Type: String
   QSS3BucketRegion:
     Default: 'us-east-1'
@@ -270,7 +265,7 @@ Resources:
   KMSKey:
     Type: AWS::KMS::Key
     Properties:
-      Description: Key used to encrypt and decrypt SSH keys stored in S3. 
+      Description: AWS KWS key to encrypt and decrypt SSH keys stored in S3. 
       KeyPolicy:
         Version: '2012-10-17'
         Statement:
@@ -492,7 +487,7 @@ Resources:
   CodeBuildBasePolicy:
     Type: 'AWS::IAM::ManagedPolicy'
     Properties:
-        Description: Policy with base permissions for CodeBuild
+        Description: Policy with base permissions for CodeBuild.
         Path: /
         Roles: 
           - !Ref CodeBuildServiceRole
@@ -534,7 +529,7 @@ Resources:
   CodeBuildEndpointPolicy:
     Type: 'AWS::IAM::ManagedPolicy'
     Properties:
-        Description: Policy with permissions for codebuild to work with endpoints
+        Description: Policy with permissions enabling CodeBuild to work with endpoints.
         Path: /
         PolicyDocument:
           Version: "2012-10-17"

@@ -18,7 +18,7 @@ Before putting a webhook into production, test your deployment by doing the foll
 
 . Modify a file in your repository.
 . Commit and push the changes.
-. Wait a few minutes, then check your S3 bucket for a new (or updated) object with a key that matches your repository path.
+. Wait a few minutes, then check the Git repository S3 bucket this Quick Start deploys for a new (or updated) object with a key that matches your repository path.
 
 :xrefstyle: short
 [#S3_new_object]
@@ -32,14 +32,12 @@ The architecture built by this Quick Start supports AWS best practices for secur
 
 === SSH Keys
 
-This Quick Start creates SSH keys with AWS CloudFormation stack. AWS KMS encrypts the SSH keys and stores them in an S3 bucket. 
-
-With the Git pull endpoint method, AWS CodeBuild retrieves and decrypts the private SSH key and uses it to authenticate your Git service before cloning the repository.
+This Quick Start deploys a private SSH key pair which is encrypted with an AWS KMS key and uploaded to Amazon S3. When invoked by the Lambda function, AWS CodeBuild decrypts the private SSH key and uses it to authenticate your Git service before cloning the repository.
 
 We don’t recommend sharing SSH keys among multiple services, or launching another instance of this Quick Start for to clone and store another repository in Amazon S3. Each repository should use unique SSH keys.
 
 === Webhook security
 
-Git services provide different ways to authenticate against an endpoint. The Git pull endpoint supports webhook secrets (used by GitHub Enterprise, GitLab, and other Git repository managers) and source IP address whitelisting. The .zip download endpoint supports personal access tokens (as used by GitHub Enterprise and GitLab) and OAuth2 (used by Bitbucket). We recommend that you set up at least one of these security mechanisms to protect your webhook API endpoint. 
+Git services provide different ways to authenticate against an endpoint, such as webhook secrets, source IP address whitelisting, personal access tokens, and OAuth2. We recommend that you set up at least one of these security mechanisms to protect your webhook API endpoint. 
 
-For more information about how this Quick Start utilizes endpoint security mechanisms, see the link:#parameter_reference[Parameter reference] section of this guide. For product-specific guidance on how to configure these security mechanisms, refer to your Git service documentation.
+For more information about how this Quick Start utilizes endpoint security mechanisms, see the link:#parameter_reference[Parameter reference] section of this guide. For specific guidance on how to configure security mechanisms for your Git service, refer to your Git service documentation.

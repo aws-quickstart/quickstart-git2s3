@@ -21,6 +21,6 @@ As shown in <<architecture_diagram>>, this Quick Start sets up a serverless AWS 
 [NOTE]
 ========
 * The inline permissions attached to the IAM roles are scoped using the http://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege[least privilege] model.
-* The CodeBuild project must be able to communicate with your Git repository. For example, you can employ a SaaS-based Git service to which CodeBuild can connect to over the internet.
+* The CodeBuild project must be able to communicate with your Git repository. For example, you can employ a SaaS-based Git service to which CodeBuild can connect over the internet.
 * The Git repository S3 bucket this Quick Start deploys has versioning enabled, and all previous versions are retained indefinitely. To modify the retention period, see http://docs.aws.amazon.com/AmazonS3/latest/user-guide/create-lifecycle.html[How do I create a lifecycle rule for an S3 bucket?].
 ========
