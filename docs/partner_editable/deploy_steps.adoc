@@ -26,7 +26,7 @@ NOTE: You can also https://fwd.aws/wr8Gg[download the template] to use it as a s
 
 After deploying the Quick Start, set up a webhook in the Git repository. 
 
-To configure a link:#webhook-endpoints[git pull endpoint], you need the *GitPullWebHookApi* and *PublicSSHKey*, which display on the *Outputs* tab on the AWS CloudFormation console.
+To configure a webhook, you need *GitPullWebHookApi* and *PublicSSHKey*. You can find these on the *Outputs* tab on the AWS CloudFormation console after deploying the Quick Start.
 
 :xrefstyle: short
 [#outputs_tab]
@@ -37,13 +37,13 @@ image::../images/outputs_tab.png[outputs_tab,width=701,height=222]
 * *GitPullWebHookApi* is the URL endpoint that receives the HTTP POST request from the Git service.
 * *PublicSSHKey* is the public SSH key used to connect to your Git repository. This key can be configured as a read-only machine user or as a deployment key in your Git repository.
 
-The instructions for setting up webhooks and deploy keys vary by Git service. For more information, see your Git service documentation.
+The instructions for setting up webhooks and deployment keys vary by Git service. For more information, see your Git service documentation.
 
 === Configuring AWS services
 
 After deploying the Quick Start, configure the AWS services in your workload to use the S3 object as a source. 
 
-As previously illustrated in <<outputs_tab>>, the *Outputs* tab in the AWS CloudFormation console includes the *OutputBucketName*. This output is an S3 key that forms the base of the path to your code .zip file. The S3 key is in the following format:
+As shown in <<outputs_tab>>, the *Outputs* tab in the AWS CloudFormation console includes *OutputBucketName*. This output is an S3 key that forms the base of the path to the .zip file of your repository code. The S3 key is in the following format:
 
 ```
 S3://output-bucket-name/git-user/git-repository/git-user_git-repository.zip
