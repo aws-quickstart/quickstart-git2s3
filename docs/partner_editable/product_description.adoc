@@ -1,14 +1,4 @@
 
-:xrefstyle: short
-After deploying this Quick Start and configuring a webhook in your Git repository, when code is pushed to the repository, the Git service sends an HTTPS POST request to the link:#_webhook_endpoints[endpoint]. The POST request contains JavaScript Object Notation (JSON) data about the push operation, including the repository details, that the AWS CodeBuild project uses to fetch the latest version of your repository.
+After deploying this Quick Start and configuring a webhook in your Git service, when a Git user pushes changes to your repository, the Git service sends an HTTPS POST request to the HTTPS endpoint. The endpoint is a URL the Quick Start creates that you use to link:#configuring_git_services[configure a Git webhook]. The HTTPS POST request contains JavaScript Object Notation (JSON) data about the push that invoked the webhook action. After the request is accepted by Amazon API Gateway, it is passed to an AWS Lambda function that triggers an AWS CodeBuild project. The CodeBuild project retrieves the latest version of your repository, zips it, and uploads it to an Amazon S3 bucket. 
 
-[#using_webhooks]
-.Using webhooks to  code commits
-[link=images/using_webhooks.png]
-image::../images/using_webhooks.png[using_webhooks,width=647,height=266]
-
-When a POST request is received, an AWS Lambda function and AWS CodeBuild project work together to retrieve, zip, and upload the Git repository to Amazon S3.
-
-NOTE: The AWS CodeBuild project deployed by this Quick Start must be able to communicate with your Git repository using a Git service. For example, you can use a SaaS-based Git service that AWS CodeBuild can reach through the internet.
-
-
+For more information about the components that this Quick Start deploys, see the link:#architecture[Architecture] section later in this guide.

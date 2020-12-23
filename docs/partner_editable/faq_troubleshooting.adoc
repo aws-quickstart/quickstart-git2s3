@@ -6,13 +6,13 @@
 
 *A.* If AWS CloudFormation fails to create the stack, we recommend that you relaunch the template with *Rollback on failure* set to *Disabled*. (This setting is under *Advanced* on the *Options* page of the AWS CloudFormation console.) With this setting, the stack’s state is retained and the instance remains running so you can troubleshoot the issue.
 
-WARNING: When you set *Rollback on failure* to *Disabled*, you continue to incur AWS charges for this stack. Ensure that you delete the stack when after troubleshooting.
+WARNING: When you set *Rollback on failure* to *Disabled*, you continue to incur AWS charges for this stack. Ensure that you delete the stack after troubleshooting.
 
 For additional information, see https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html[Troubleshooting AWS CloudFormation^] on the AWS website.
 
 == Troubleshooting
 
-If your commits are not being pushed through to Amazon S3, do the following:
+If commits to your repository do not show up in Amazon S3, do the following:
 
 * Check the security parameters and endpoint in your Git webhook configuration. See link:#configuring_git_services[Configuring Git services] earlier in this guide and consult your Git service documentation for help configuring webhooks.
 * Check the Lambda logs for errors. These are stored in Amazon CloudWatch Logs. For help accessing them, see https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html[Accessing Amazon CloudWatch logs for AWS Lambda].
