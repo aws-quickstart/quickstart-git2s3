@@ -23,6 +23,13 @@ Metadata:
           - QSS3BucketName
           - QSS3BucketRegion
           - QSS3KeyPrefix
+      - Label:
+          default: VPC configuration
+        Parameters:
+          - VPCId
+          - VPCCidrRange
+          - SubnetIds
+          - ScmHostnameOverride
     ParameterLabels:
       AllowedIps:
         default: Allowed IP addresses
@@ -38,6 +45,14 @@ Metadata:
         default: Quick Start S3 bucket Region
       QSS3KeyPrefix:
         default: Quick Start S3 key prefix
+      VPCId:
+        default: VPC ID
+      VPCCidrRange:
+        default: VPC CIDR
+      SubnetIds:
+        default: Subnet IDs
+      ScmHostnameOverride:
+        default: Hostname override
       ExcludeGit:
         default: Exclude .git directory
 Parameters:
@@ -88,7 +103,7 @@ Parameters:
     Type: CommaDelimitedList
     Default: ''
   ScmHostnameOverride:
-    Description: Host name to override the incoming JSON request.
+    Description: Name to override the hostname in the header of a webhook JSON payload.
     Type: String
     Default: ''
   ExcludeGit:
