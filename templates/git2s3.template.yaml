@@ -3,7 +3,7 @@ Description: Git webhooks to clone and store a Git repository in S3. Used to int
   with AWS services like AWS CodePipeline, AWS CodeBuild, and AWS CodeDeploy. (qs-1nfhrd9bh)
 Metadata:
   QuickStartDocumentation:
-    EntrypointName: Deploy into your selected Region.
+    EntrypointName: Parameters for deploying into your selected Region.
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -42,21 +42,20 @@ Metadata:
         default: Exclude Git
 Parameters:
   AllowedIps:
-    Description: Comma-separated list of IP CIDR blocks for source IP authentication. BitBucket Cloud IP ranges provided by default.
+    Description: Comma-separated list of allowed IP CIDR blocks. The default addresses listed are BitBucket Cloud IP ranges.
     Type: String
     Default: 18.205.93.0/25,18.234.32.128/25,13.52.5.0/25
   ApiSecret:
-    Description: WebHook secrets for use with GitHub Enterprise and GitLab. If a secret is matched, IP range authentication is bypassed. Cannot
-      contain commas (,), backward slashes (\), or quotes (").
+    Description: API secret used to authenticate access to webhooks in GitHub Enterprise, GitLab, and other Git services. If a webhook payload header contains a matching secret, IP address authentication is bypassed. API secrets cannot contain commas (,), backward slashes (\), or quotes (").
     Type: String
     Default: ''
     NoEcho: 'true'
   CustomDomainName:
-    Description: Domain name for the webhook endpoint. If left blank, API Gateway will create a domain name for you.
+    Description: Domain name for the webhook endpoint. If left blank, API Gateway creates a domain name for you.
     Type: String
     Default: ''
   OutputBucketName:
-    Description: (Optional) Name for the S3 bucket where the Git repository .zip file is stored. If left blank, an S3 bucket name is created automatically.
+    Description: (Optional) Name for the S3 bucket where the Git repository .zip file is stored. If left blank, the Quick Start creates one for you.
     Type: String
     Default: ''
   QSS3BucketName:
@@ -64,11 +63,11 @@ Parameters:
     ConstraintDescription: Quick Start S3 bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen
       (-).
     Default: aws-quickstart
-    Description: S3 bucket name for the Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).
+    Description: S3 bucket name for Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).
     Type: String
   QSS3BucketRegion:
     Default: 'us-east-1'
-    Description: AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. Required when using your own S3 bucket.
+    Description: AWS Region where the Quick Start asset S3 bucket (QSS3BucketName) is hosted. Required when using your own S3 bucket.
     Type: String
   QSS3KeyPrefix:
     AllowedPattern: ^[0-9a-zA-Z-/]*$
