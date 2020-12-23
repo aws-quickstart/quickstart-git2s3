@@ -4,45 +4,40 @@
 
 *Q.* I encountered a *CREATE_FAILED* error when I launched the Quick Start.
 
-*A.* If AWS CloudFormation fails to create the stack, we recommend that you relaunch the template with *Rollback on failure* set to *Disabled*. (This setting is under *Advanced* in the AWS CloudFormation console, *Options* page.) With this setting, the stack’s state is retained and the instance is left running, so you can troubleshoot the issue.)
+*A.* If AWS CloudFormation fails to create the stack, we recommend that you relaunch the template with *Rollback on failure* set to *Disabled*. (This setting is under *Advanced* on the *Options* page of the AWS CloudFormation console.) With this setting, the stack’s state is retained and the instance remains running so you can troubleshoot the issue.
 
-WARNING: When you set *Rollback on failure* to *Disabled*, you continue to incur AWS charges for this stack. Please make sure to delete the stack when you finish troubleshooting.
+WARNING: When you set *Rollback on failure* to *Disabled*, you continue to incur AWS charges for this stack. Ensure that you delete the stack after troubleshooting.
 
 For additional information, see https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html[Troubleshooting AWS CloudFormation^] on the AWS website.
 
 == Troubleshooting
 
-If your commits are not being pushed through to Amazon S3, check the following:
+If commits to your repository do not show up in Amazon S3, do the following:
 
-* In your Git service’s webhooks configuration, check that your configured security parameters and the endpoint are correct. Consult the Git service documentation for detailed guidance on configuration.
-* Check the Lambda logs for errors. These are stored in Amazon CloudWatch Logs. To access the logs, open the endpoint’s Lambda function in the AWS console, navigate to the *Monitoring* tab, and then choose *View logs in CloudWatch*.
+* Check the security parameters and endpoint in your Git webhook configuration. See link:#configuring_git_services[Configuring Git services] earlier in this guide and consult your Git service documentation for help configuring webhooks.
+* Check the Lambda logs for errors. These are stored in Amazon CloudWatch Logs. For help accessing them, see https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html[Accessing Amazon CloudWatch logs for AWS Lambda].
+* Check the AWS CodeBuild project logs for errors. To access them, do the following:
+. Open the AWS CodeBuild console. 
+. On the *Build history* page, click the *Build run* link for the project.
+. On the *Build status* page, see the *Build logs* tab.
 
-For additional information, see https://docs.aws.amazon.com/lambda/latest/dg/lambda-troubleshooting.html[Troubleshooting issues in AWS Lambda^] on the AWS website.
-
-* Check the AWS CodeBuild project logs for errors. These are stored in Amazon CloudWatch Logs. To access the logs, open the endpoint’s CodeBuild Build Project in the AWS console, select a *Build run* and click on the hyperlink and navigate to the *Build logs* tab to see the build execution logs.
-
-For additional information, see https://docs.aws.amazon.com/codebuild/latest/userguide/troubleshooting.html[Troubleshooting AWS CodeBuild^] on the AWS website.
-
-== Additional Resources
+== Additional resources
 
 === AWS services
 
-*AWS CloudFormation* https://aws.amazon.com/documentation/cloudformation/
-
-*AWS Lambda* https://aws.amazon.com/documentation/lambda/
-
-*Amazon API Gateway* https://aws.amazon.com/documentation/apigateway/
-
-*Amazon S3* https://aws.amazon.com/documentation/s3/
-
-*AWS CodePipeline* https://aws.amazon.com/documentation/codepipeline/
-
-*AWS CodeBuild* https://aws.amazon.com/documentation/codebuild/
+* https://aws.amazon.com/documentation/cloudformation/[AWS CloudFormation]
+* https://aws.amazon.com/documentation/lambda/[AWS Lambda]
+** https://docs.aws.amazon.com/lambda/latest/dg/lambda-troubleshooting.html[Troubleshooting issues in AWS Lambda^]
+* https://aws.amazon.com/documentation/apigateway/[Amazon API Gateway]
+* https://aws.amazon.com/documentation/s3/[Amazon S3]
+* https://aws.amazon.com/documentation/codepipeline/[AWS CodePipeline]
+** http://docs.aws.amazon.com/codepipeline/latest/userguide/tutorials-simple-s3.html[Tutorial: Create a simple pipeline (S3 bucket)]
+* https://aws.amazon.com/documentation/codebuild/[AWS CodeBuild]
+** https://docs.aws.amazon.com/codebuild/latest/userguide/troubleshooting.html[Troubleshooting AWS CodeBuild^]
+** http://docs.aws.amazon.com/codebuild/latest/userguide/getting-started.html[Getting started with AWS CodeBuild using the console]
 
 === Webhooks
 
-*GitHub Developer Repository Webhooks API* https://developer.github.com/v3/repos/hooks/
-
-*Atlassian Bitbucket Webhooks documentation* https://confluence.atlassian.com/bitbucket/manage-webhooks-735643732.html
-
-*GitLab Webhooks documentation* https://docs.gitlab.com/ce/user/project/integrations/webhooks.html
+* https://developer.github.com/v3/repos/hooks/[Webhooks on GitHub Developer blog]
+* https://confluence.atlassian.com/bitbucket/manage-webhooks-735643732.html[Manage webhooks on Atlassian Bitbucket Support]
+* https://docs.gitlab.com/ce/user/project/integrations/webhooks.html[Webhooks on GitLab Docs]

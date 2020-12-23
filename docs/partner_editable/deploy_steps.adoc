@@ -8,49 +8,47 @@
 
 . https://fwd.aws/mDMrd[Launch the AWS CloudFormation template] into your AWS account.
 
-You can also https://fwd.aws/wr8Gg[download the template] to use it as a starting point for your own implementation.
+NOTE: You are responsible for the cost of the AWS services used while running this Quick Start reference deployment. There is no additional cost for using this Quick Start. Prices are subject to change. See the pricing pages for each AWS service you use in this Quick Start for full details.
 
-The stack takes approximately 15 minutes to create.
-
-NOTE: You are responsible for the cost of the AWS services used while running this Quick Start reference deployment. There is no additional cost for using this Quick Start. Prices are subject to change. See the pricing pages for each AWS service you will be using in this Quick Start for full details.
-
+:xrefstyle: short
 [start=2]
-. Check the region that’s displayed in the upper-right corner of the navigation bar, and change it if necessary. This is where the network infrastructure will be built. The template is launched in the US East (Ohio) Region by default.
+. Check the Region that’s displayed in the upper-right corner of the navigation bar, and change it if necessary. This Region is where the Quick Start infrastructure is built. The template for this Quick Start is launched in the US East (Ohio) Region by default.
 . On the *Select Template* page, keep the default setting for the template URL, and then choose *Next*.
-. On the *Specify Details* page, change the stack name if needed. Review the parameters for the template. Provide values for the parameters that require input. For all other parameters, review the default settings and customize them as necessary. When you finish reviewing and customizing the parameters, choose *Next*.
+. On the *Specify Details* page, change the stack name if needed. Review the parameters for the template. Provide values for the parameters that require input. For all other parameters, review the default settings and customize them as necessary. After reviewing and customizing the parameters, choose *Next*.
 . On the *Options* page, you can https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-resource-tags.html[specify tags] (key-value pairs) for resources in your stack and https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-add-tags.html[set advanced options]. When you’re done, choose *Next*.
-. On the *Review* page, review and confirm the template settings. Under *Capabilities*, select the check box to acknowledge that the template will create IAM resources.
-. Choose *Create* to deploy the stack.
+. On the *Review* page, review and confirm the template settings. Under *Capabilities*, select the check box to acknowledge that the template creates IAM resources.
+. Choose *Create* to deploy the stack. The stack takes approximately 15 minutes to create.
 . Monitor the status of the stack. When the status is *CREATE_COMPLETE*, the webhook resources are ready.
-. The *Outputs* tab for the stack contain the two webhook endpoint URLs, the output bucket name, and the public SSH key, as illustrated in Figure 4.
+. The *Outputs* tab for the stack contain the endpoint URL, the output S3 bucket name, and the public SSH key, as shown in <<outputs_tab>>.
 
-=== Configure Your Git Repository
+NOTE: You can also https://fwd.aws/wr8Gg[download the template] to use it as a starting point for your own implementation.
 
-After you have successfully deployed the Quick Start, you can configure the service that will use the S3 object as a source. Figure 4 shows the *Outputs* tab in the AWS CloudFormation console, which displays the outputs for configuring your Git webhook.
+=== Configuring Git services
 
-image:../images/image5.png[Figure 4,width=701,height=222]
+After deploying the Quick Start, set up a webhook in your Git repository. 
+
+To configure a webhook, you need *GitPullWebHookApi* and *PublicSSHKey*. You can find these on the *Outputs* tab on the AWS CloudFormation console after deploying the Quick Start.
 
 
-*Figure 3: Outputs tab after deployment*
+[#outputs_tab]
+.Outputs tab on the AWS CloudFormation console
+[link=images/outputs_tab.png]
+image::../images/outputs_tab.png[outputs_tab,width=701,height=222]
 
+* *GitPullWebHookApi* is the URL endpoint that receives the HTTP POST request from the Git service.
+* *PublicSSHKey* is the public SSH key used to connect to your Git repository. This key can be configured as a read-only machine user or as a deployment key in your Git repository.
 
-* *GitPullWebHookApi* is the webhook endpoint to use if you opt for the Git pull method described in the link:#webhook-endpoints[Webhook Endpoints] section of this guide.
-* *PublicSSHKey* is the public SSH key that you use to connect to your repository if you’re using the Git pull endpoint. This key can be configured as a read-only machine user or as a deployment key in your Git service.
+The instructions for setting up webhooks and deployment keys vary by Git service. For more information, see your Git service documentation.
 
-The exact process to set up webhooks differs from service to service. For step-by-step instructions, consult your Git service’s documentation.
+=== Configuring AWS services
 
-=== Configure an AWS Service to Connect to the S3 Object
+After deploying the Quick Start, configure the AWS services in your workload to use the Git repository S3 bucket as a source. 
 
-After you have successfully deployed the Quick Start, you can configure the desired service to use the S3 object as a source. As previously illustrated in Figure 4, the *Outputs* tab in the AWS CloudFormation console includes the *OutputBucketName* output. This output is an S3 key that forms the base of the path to your code zip file. The S3 key is in this format:
+As shown in <<outputs_tab>>, the *Outputs* tab in the AWS CloudFormation console includes *OutputBucketName*. This output is an S3 key that forms the base of the path to the .zip file of your repository code. The S3 key is in the following format:
 
-S3://_output-bucket-name_/_git-user_/_git-repository_/_git-user_git-repository_.zip
+```
+S3://output-bucket-name/git-user/git-repository/git-user_git-repository.zip
+```
+Here, `git-user` is the owner or path prefix of the repository. In some Git services, this may be an organization name. However, some Git services do not return a Git user or organization for a repository. In these cases, you can omit the `git-user` parts of the path.
 
-where:
-
-* _git-user_ is the owner or path prefix of the repository. In some Git services, this may be an organization name.
-* Some Git services do not return a Git user or organization for a repository. In these cases, you can omit the _git-user_ parts of the path.
-
-The exact process for linking an AWS service differs from service to service. For step-by-step instructions, consult the service documentation. For easy reference, here are links for the two typical services:
-
-* http://docs.aws.amazon.com/codepipeline/latest/userguide/tutorials-simple-s3.html[AWS CodePipeline – Simple pipeline tutorial]
-* http://docs.aws.amazon.com/codebuild/latest/userguide/getting-started.html[AWS CodeBuild – Walkthrough for creating deployable source code]
+The instructions for linking an AWS service to an S3 object vary. For links to AWS service documentation, see link:#aws-services[AWS Services] later in this guide.

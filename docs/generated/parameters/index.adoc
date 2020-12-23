@@ -1,1 +1,3 @@
-// placeholder
+
+=== Deploying into your selected Region
+include::git2s3.template.adoc[]

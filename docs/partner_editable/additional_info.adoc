@@ -1,47 +1,43 @@
-==== Adding an API Secret After Deployment
+== Adding an API secret after deployment
 
-In some cases, your Git service may provide security mechanisms like API secrets when you create the webhook. In these cases, you can launch the Quick Start with a blank parameter value for the *API Secret* parameter, and then update the stack to provide the value of the parameter. Follow these steps:
+You can launch this Quick Start without an *API Secret* parameter. If your Git service provides an API secret when you create a webhook, you can update the stack with the API secret later.  
 
-. In the https://console.aws.amazon.com/cloudformation[AWS Cloudformation console], select the stack.
+To update the stack with an API secret, do the following:
 
-[arabic, start=2]
-. Choose *Actions*, and then choose *Update Stack*.
-. Keep the default to use the current template.
-. On the *Specify Details* page, change the *API Secret* parameter setting.
-. Choose *Next* twice.
-
-[arabic, start=10]
-. Under *Capabilities*, select the check box to acknowledge that the template will create IAM resources, and then choose *Update*.
-
-When the status is *UPDATE_COMPLETE*, the stack has been updated with the webhook secret you specified for security.
+. In the https://console.aws.amazon.com/cloudformation[AWS Cloudformation console], select the stack you want to update.
+. In the stack details pane, choose *Update*.
+. Choose *Use current template*.
+. On the *Specify stack details* page, change the *API Secret* parameter setting, then choose *Next*.
+. On the *Configure stack options* page, choose *Next*.
+. Choose *I acknowledge that this template may create IAM resources*.
+. Choose *Update stack*. When the status is *UPDATE_COMPLETE*, the stack is updated with the API secret.
 
 == Test the deployment
 
-Before putting the webhook into production, you should test your deployment.
+Before putting a webhook into production, test your deployment by doing the following:
 
 . Modify a file in your repository.
-
-image:../images/image6.png[../Desktop/Screen_Shot_2017-07-15_at_11_35_57_AM.png,width=529,height=21]
-
 . Commit and push the changes.
+. Wait a few minutes, then check the Git repository S3 bucket this Quick Start deploys for a new (or updated) object with a key that matches your repository path.
 
-image:../images/image7.png[Figure 4,width=648,height=198]
+:xrefstyle: short
+[#S3_new_object]
+.Checking for a new or updated object in your S3 bucket after a commit
+[link=images/S3_new_object.png]
+image::../images/S3_new_object.png[S3_new_object,width=646,height=348]
 
-[start=2]
-. Wait a few minutes and check your S3 bucket for a new (or updated) object with a key that matches your repository path.
-
-image:../images/image8.png[Figure 5,width=646,height=348]
-
-*Figure 4: Checking for S3 bucket updates after a commit*
-
-=== Best Practices
+== Best practices
 
 The architecture built by this Quick Start supports AWS best practices for security.
 
-==== SSH Keys
+=== SSH Keys
 
-SSH keys are generated at stack creation, and are then encrypted using AWS KMS and the encrypted copy stored in Amazon S3. When you use the Git pull endpoint, the private key is fetched by the Lambda function, decrypted, and used to authenticate against your Git service to perform a clone of the repository. We don’t recommend (a) reusing SSH keys for multiple services, or (b) launching another instance of this Quick Start for each repository that you wish to clone to Amazon S3; this ensures that each repository uses unique keys.
+This Quick Start deploys a private SSH key pair which is encrypted with an AWS KMS key and uploaded to Amazon S3. When invoked by the Lambda function, AWS CodeBuild decrypts the private SSH key and uses it to authenticate your Git service before cloning the repository.
 
-==== Webhook Security
+We don’t recommend sharing SSH keys among multiple services, or launching another instance of this Quick Start for to clone and store another repository in Amazon S3. Each repository should use unique SSH keys.
 
-Different Git services provide varying ways to authenticate against an endpoint. The Git pull endpoint supports webhook secrets (used by GitHub Enterprise, GitLab, and other Git repository managers) as well as source IP address whitelisting. The zip download endpoint supports personal access tokens (as used by GitHub Enterprise and GitLab) and OAuth2 (used by Bitbucket). We recommend that you set up at least one of these security mechanisms to protect your webhook API endpoint. For more information about how this Quick Start utilizes these mechanisms, see the parameters in the link:#deployment-steps[Deployment Steps] section of this guide. For product-specific guidance on how to configure these security mechanisms, refer to your Git product’s documentation.
+=== Webhook security
+
+Git services provide different ways to authenticate against an endpoint, such as webhook secrets, source IP address whitelisting, personal access tokens, and OAuth2. We recommend that you set up at least one of these security mechanisms to protect your webhook API endpoint. 
+
+For more information about how this Quick Start utilizes endpoint security mechanisms, see the link:#parameter_reference[Parameter reference] section of this guide. For specific guidance on how to configure security mechanisms for your Git service, refer to your Git service documentation.
