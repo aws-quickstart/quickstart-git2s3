@@ -39,7 +39,7 @@ Metadata:
       QSS3KeyPrefix:
         default: Quick Start S3 key prefix
       ExcludeGit:
-        default: Exclude Git
+        default: Exclude .git directory
 Parameters:
   AllowedIps:
     Description: Comma-separated list of allowed IP CIDR blocks. The default addresses listed are BitBucket Cloud IP ranges.
@@ -63,20 +63,17 @@ Parameters:
     ConstraintDescription: Quick Start S3 bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen
       (-).
     Default: aws-quickstart
-    Description: S3 bucket name for Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).
+    Description: S3 bucket name for Quick Start assets. It can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).
     Type: String
   QSS3BucketRegion:
     Default: 'us-east-1'
-    Description: AWS Region where the Quick Start asset S3 bucket (QSS3BucketName) is hosted. Required when using your own S3 bucket.
+    Description: AWS Region where the Quick Start assets S3 bucket (QSS3BucketName) is hosted. Required when using your own S3 bucket.
     Type: String
   QSS3KeyPrefix:
     AllowedPattern: ^[0-9a-zA-Z-/]*$
-    ConstraintDescription: Quick Start key prefix can include numbers, lowercase letters,
-      uppercase letters, hyphens (-), and forward slash (/).
+    ConstraintDescription: Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slashes (/).
     Default: quickstart-git2s3/
-    Description: S3 key prefix for the Quick Start assets. Quick Start key prefix
-      can include numbers, lowercase letters, uppercase letters, hyphens (-), and
-      forward slash (/).
+    Description: Key prefix for the Quick Start assets S3 bucket. A key prefix is similar to a directory name that enables you to store similar data under the same directory in an S3 bucket. It can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slashes (/).
     Type: String
   VPCId:
     Description: ID of the VPC in which the Lambda function runs.
@@ -95,7 +92,7 @@ Parameters:
     Type: String
     Default: ''
   ExcludeGit:
-    Description: Include the .git directory in the .zip file (True), or do not include (False).
+    Description: Choose false to omit the .git directory from the Git repository .zip file.
     Type: String
     Default: 'True'
     AllowedValues: ['True', 'False']
