@@ -14,41 +14,4 @@ NOTE: You are responsible for the cost of the AWS services used while running th
 [start=2]
 . Check the Region that’s displayed in the upper-right corner of the navigation bar, and change it if necessary. This Region is where the Quick Start infrastructure is built. The template for this Quick Start is launched in the US East (Ohio) Region by default.
 . On the *Select Template* page, keep the default setting for the template URL, and then choose *Next*.
-. On the *Specify Details* page, change the stack name if needed. Review the parameters for the template. Provide values for the parameters that require input. For all other parameters, review the default settings and customize them as necessary. After reviewing and customizing the parameters, choose *Next*.
-. On the *Options* page, you can https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-resource-tags.html[specify tags] (key-value pairs) for resources in your stack and https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-add-tags.html[set advanced options]. When you’re done, choose *Next*.
-. On the *Review* page, review and confirm the template settings. Under *Capabilities*, select the check box to acknowledge that the template creates IAM resources.
-. Choose *Create* to deploy the stack. The stack takes approximately 15 minutes to create.
-. Monitor the status of the stack. When the status is *CREATE_COMPLETE*, the webhook resources are ready.
-. The *Outputs* tab for the stack contain the endpoint URL, the output S3 bucket name, and the public SSH key, as shown in <<outputs_tab>>.
-
-NOTE: You can also https://fwd.aws/wr8Gg[download the template] to use it as a starting point for your own implementation.
-
-=== Configuring Git services
-
-After deploying the Quick Start, set up a webhook in your Git repository. 
-
-To configure a webhook, you need *GitPullWebHookApi* and *PublicSSHKey*. You can find these on the *Outputs* tab on the AWS CloudFormation console after deploying the Quick Start.
-
-
-[#outputs_tab]
-.Outputs tab on the AWS CloudFormation console
-[link=images/outputs_tab.png]
-image::../images/outputs_tab.png[outputs_tab,width=701,height=222]
-
-* *GitPullWebHookApi* is the URL endpoint that receives the HTTP POST request from the Git service.
-* *PublicSSHKey* is the public SSH key used to connect to your Git repository. This key can be configured as a read-only machine user or as a deployment key in your Git repository.
-
-The instructions for setting up webhooks and deployment keys vary by Git service. For more information, see your Git service documentation.
-
-=== Configuring AWS services
-
-After deploying the Quick Start, configure the AWS services in your workload to use the Git repository S3 bucket as a source. 
-
-As shown in <<outputs_tab>>, the *Outputs* tab in the AWS CloudFormation console includes *OutputBucketName*. This output is an S3 key that forms the base of the path to the .zip file of your repository code. The S3 key is in the following format:
-
-```
-S3://output-bucket-name/git-user/git-repository/git-user_git-repository.zip
-```
-Here, `git-user` is the owner or path prefix of the repository. In some Git services, this may be an organization name. However, some Git services do not return a Git user or organization for a repository. In these cases, you can omit the `git-user` parts of the path.
-
-The instructions for linking an AWS service to an S3 object vary. For links to AWS service documentation, see link:#aws-services[AWS Services] later in this guide.
+. On the *Specify Details* page, change the stack name if needed. Review the parameters for the template. Provide values for the parameters that require input. For all other parameters, review the default settings and customize them as necessary. For details on each parameter, see the link:#_parameter_reference[Parameter reference] section of this guide. After reviewing and customizing the parameters, choose *Next*.

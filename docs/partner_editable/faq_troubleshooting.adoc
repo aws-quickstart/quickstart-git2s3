@@ -14,7 +14,7 @@ For additional information, see https://docs.aws.amazon.com/AWSCloudFormation/la
 
 If commits to your repository do not show up in Amazon S3, do the following:
 
-* Check the security parameters and endpoint in your Git webhook configuration. See link:#configuring_git_services[Configuring Git services] earlier in this guide and consult your Git service documentation for help configuring webhooks.
+* Check the security parameters and endpoint in your Git webhook configuration. See link:#_configuring_git_services[Configuring Git services] earlier in this guide and consult your Git service documentation for help configuring webhooks.
 * Check the Lambda logs for errors. These are stored in Amazon CloudWatch Logs. For help accessing them, see https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html[Accessing Amazon CloudWatch logs for AWS Lambda].
 * Check the AWS CodeBuild project logs for errors. To access them, do the following:
 . Open the AWS CodeBuild console. 

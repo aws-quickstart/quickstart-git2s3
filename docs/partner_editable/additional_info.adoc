@@ -1,3 +1,32 @@
+=== Configuring Git services
+
+After deploying the Quick Start, set up a webhook in your Git repository. 
+
+To configure a webhook, you need *GitPullWebHookApi* and *PublicSSHKey*. You can find these on the *Outputs* tab on the AWS CloudFormation console after deploying the Quick Start.
+
+[#outputs_tab]
+.Outputs tab on the AWS CloudFormation console
+[link=images/outputs_tab.png]
+image::../images/outputs_tab.png[outputs_tab,width=701,height=222]
+
+* *GitPullWebHookApi* is the URL endpoint that receives the HTTP POST request from the Git service.
+* *PublicSSHKey* is the public SSH key used to connect to your Git repository. This key can be configured as a read-only machine user or as a deployment key in your Git repository.
+
+The instructions for setting up webhooks and deployment keys vary by Git service. For more information, see your Git service documentation.
+
+=== Configuring AWS services
+
+After deploying the Quick Start, configure the AWS services in your workload to use the Git repository S3 bucket as a source. 
+
+As shown in <<outputs_tab>>, the *Outputs* tab in the AWS CloudFormation console includes *OutputBucketName*. This output is an S3 key that forms the base of the path to the .zip file of your repository code. The S3 key is in the following format:
+
+```
+S3://output-bucket-name/git-user/git-repository/git-user_git-repository.zip
+```
+Here, `git-user` is the owner or path prefix of the repository. In some Git services, this may be an organization name. However, some Git services do not return a Git user or organization for a repository. In these cases, you can omit the `git-user` parts of the path.
+
+The instructions for linking an AWS service to an S3 object vary. For links to AWS service documentation, see link:#_aws_services[AWS services] later in this guide.
+
 == Adding an API secret after deployment
 
 You can launch this Quick Start without an *API Secret* parameter. If your Git service provides an API secret when you create a webhook, you can update the stack with the API secret later.  
@@ -40,4 +69,4 @@ We don’t recommend sharing SSH keys among multiple services, or launching anot
 
 Git services provide different ways to authenticate against an endpoint, such as webhook secrets, source IP address whitelisting, personal access tokens, and OAuth2. We recommend that you set up at least one of these security mechanisms to protect your webhook API endpoint. 
 
-For more information about how this Quick Start utilizes endpoint security mechanisms, see the link:#parameter_reference[Parameter reference] section of this guide. For specific guidance on how to configure security mechanisms for your Git service, refer to your Git service documentation.
+For more information about how this Quick Start utilizes endpoint security mechanisms, see the link:#_parameter_reference[Parameter reference] section of this guide. For specific guidance on how to configure security mechanisms for your Git service, refer to your Git service documentation.
