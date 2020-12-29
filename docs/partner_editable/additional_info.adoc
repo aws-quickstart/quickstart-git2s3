@@ -61,7 +61,7 @@ The architecture built by this Quick Start supports AWS best practices for secur
 
 === SSH Keys
 
-This Quick Start deploys a private SSH key pair which is encrypted with an AWS KMS key and uploaded to Amazon S3. When invoked by the Lambda function, AWS CodeBuild decrypts the private SSH key and uses it to authenticate your Git service before cloning the repository.
+This Quick Start deploys a private SSH key pair which is encrypted with an AWS KMS key and uploaded to Amazon S3. When invoked by the Lambda function, CodeBuild decrypts the private SSH key and uses it to authenticate your Git service before cloning the repository.
 
 We don’t recommend sharing SSH keys among multiple services, or launching another instance of this Quick Start for to clone and store another repository in Amazon S3. Each repository should use unique SSH keys.
 
