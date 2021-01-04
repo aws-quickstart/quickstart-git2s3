@@ -33,7 +33,7 @@ You can launch this Quick Start without an *API Secret* parameter. If your Git s
 
 To update the stack with an API secret, do the following:
 
-. In the https://console.aws.amazon.com/cloudformation[AWS Cloudformation console], select the stack you want to update.
+. In the https://console.aws.amazon.com/cloudformation[AWS CloudFormation console], select the stack you want to update.
 . In the stack details pane, choose *Update*.
 . Choose *Use current template*.
 . On the *Specify stack details* page, change the *API Secret* parameter setting, then choose *Next*.
@@ -61,9 +61,9 @@ The architecture built by this Quick Start supports AWS best practices for secur
 
 === SSH Keys
 
-This Quick Start deploys a private SSH key pair which is encrypted with an AWS KMS key and uploaded to Amazon S3. When invoked by the Lambda function, CodeBuild decrypts the private SSH key and uses it to authenticate your Git service before cloning the repository.
+This Quick Start deploys a private SSH key pair which is encrypted with an AWS KMS key and uploaded to Amazon S3. CodeBuild decrypts the private SSH key and uses it to authenticate your Git service before cloning the repository.
 
-We don’t recommend sharing SSH keys among multiple services, or launching another instance of this Quick Start for to clone and store another repository in Amazon S3. Each repository should use unique SSH keys.
+We don’t recommend sharing SSH keys among multiple services, or launching another instance of this Quick Start to clone and store another repository in Amazon S3. Each repository should use unique SSH keys.
 
 === Webhook security
 
