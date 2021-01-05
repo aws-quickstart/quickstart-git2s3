@@ -8,17 +8,17 @@
 
 WARNING: When you set *Rollback on failure* to *Disabled*, you continue to incur AWS charges for this stack. Ensure that you delete the stack after troubleshooting.
 
-For additional information, see https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html[Troubleshooting AWS CloudFormation^] on the AWS website.
+For more information, see https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html[Troubleshooting AWS CloudFormation^].
 
 == Troubleshooting
 
 If commits to your repository do not show up in Amazon S3, do the following:
 
-* Check the security parameters and endpoint in your Git webhook configuration. See link:#_configuring_git_services[Configuring Git services] earlier in this guide and consult your Git service documentation for help configuring webhooks.
-* Check the Lambda logs for errors. These are stored in Amazon CloudWatch Logs. For help accessing them, see https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html[Accessing Amazon CloudWatch logs for AWS Lambda].
+* Check the security parameters and endpoint in your Git webhook configuration. See link:#_configuring_git_services[Configuring Git services] earlier in this guide and consult your Git service documentation for help with configuring webhooks.
+* Check the AWS Lambda logs for errors. These are stored in Amazon CloudWatch Logs. For help with accessing them, see https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html[Accessing Amazon CloudWatch logs for AWS Lambda].
 * Check the AWS CodeBuild project logs for errors. To access them, do the following:
 . Open the AWS CodeBuild console. 
-. On the *Build history* page, click the *Build run* link for the project.
+. On the *Build history* page, choose the *Build run* link for the project.
 . On the *Build status* page, see the *Build logs* tab.
 
 == Additional resources
@@ -38,6 +38,6 @@ If commits to your repository do not show up in Amazon S3, do the following:
 
 === Webhooks
 
-* https://developer.github.com/v3/repos/hooks/[Webhooks on GitHub Developer blog]
-* https://confluence.atlassian.com/bitbucket/manage-webhooks-735643732.html[Manage webhooks on Atlassian Bitbucket Support]
-* https://docs.gitlab.com/ce/user/project/integrations/webhooks.html[Webhooks on GitLab Docs]
+* https://developer.github.com/v3/repos/hooks/[GitHub Docs: Webhooks]
+* https://confluence.atlassian.com/bitbucket/manage-webhooks-735643732.html[BitBucket Support: Manage webhooks]
+* https://docs.gitlab.com/ce/user/project/integrations/webhooks.html[GitLab Docs: Webhooks]
