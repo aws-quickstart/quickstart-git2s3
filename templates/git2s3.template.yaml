@@ -3,7 +3,7 @@ Description: Git webhooks to clone and store a Git repository in S3. Used to int
   with AWS services like AWS CodePipeline, AWS CodeBuild, and AWS CodeDeploy. (qs-1nfhrd9bh)
 Metadata:
   QuickStartDocumentation:
-    EntrypointName: Parameters for deploying into your selected Region.
+    EntrypointName: Parameters for deploying into your selected Region
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
