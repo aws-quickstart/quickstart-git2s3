@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generator" content="Asciidoctor 2.0.10">
-<title>Git Webhooks on the AWS Cloud</title>
+<meta name="generator" content="Asciidoctor 2.0.12">
+<title>Git webhooks on the AWS Cloud</title>
 <style>
 
 /* Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -790,7 +790,7 @@ p.footer-text a{color:#d7d8d8}
 <div id="toctitle"></div>
 <ul class="sectlevel1">
 <li><a href="#_overview">Overview</a></li>
-<li><a href="#_git_webhooks_on_aws">Git Webhooks on AWS</a></li>
+<li><a href="#_git_webhooks_on_aws">Git webhooks on AWS</a></li>
 <li><a href="#_cost">Cost</a></li>
 <li><a href="#_architecture">Architecture</a></li>
 <li><a href="#_planning_the_deployment">Planning the deployment</a>
@@ -803,22 +803,29 @@ p.footer-text a{color:#d7d8d8}
 <ul class="sectlevel2">
 <li><a href="#_sign_in_to_your_aws_account">Sign in to your AWS account</a></li>
 <li><a href="#_launch_the_quick_start">Launch the Quick Start</a></li>
-<li><a href="#_configure_your_git_repository">Configure Your Git Repository</a></li>
-<li><a href="#_configure_an_aws_service_to_connect_to_the_s3_object">Configure an AWS Service to Connect to the S3 Object</a></li>
-<li><a href="#_launch_quick_start">Launch Quick Start</a></li>
+<li><a href="#_configuring_git_services">Configuring Git services</a></li>
+<li><a href="#_configuring_aws_services">Configuring AWS services</a></li>
 </ul>
 </li>
-<li><a href="#_test_the_deployment">Test the deployment</a>
+<li><a href="#_adding_an_api_secret_after_deployment">Adding an API secret after deployment</a></li>
+<li><a href="#_test_the_deployment">Test the deployment</a></li>
+<li><a href="#_best_practices">Best practices</a>
 <ul class="sectlevel2">
-<li><a href="#_best_practices">Best Practices</a></li>
+<li><a href="#_ssh_keys">SSH keys</a></li>
+<li><a href="#_webhook_security">Webhook security</a></li>
 </ul>
 </li>
 <li><a href="#_faq">FAQ</a></li>
 <li><a href="#_troubleshooting">Troubleshooting</a></li>
-<li><a href="#_additional_resources">Additional Resources</a>
+<li><a href="#_additional_resources">Additional resources</a>
 <ul class="sectlevel2">
 <li><a href="#_aws_services">AWS services</a></li>
 <li><a href="#_webhooks">Webhooks</a></li>
+</ul>
+</li>
+<li><a href="#_parameter_reference">Parameter reference</a>
+<ul class="sectlevel2">
+<li><a href="#_parameters_for_deploying_into_your_selected_region">Parameters for deploying into your selected Region</a></li>
 </ul>
 </li>
 <li><a href="#_send_us_feedback">Send us feedback</a></li>
@@ -831,7 +838,7 @@ p.footer-text a{color:#d7d8d8}
 <div id="content">
 <div id="preamble">
 <div class="sectionbody">
-<h2 id="_git_webhooks_on_the_aws_cloud" class="discrete text-center">Git Webhooks on the AWS Cloud</h2>
+<h2 id="_git_webhooks_on_the_aws_cloud" class="discrete text-center">Git webhooks on the AWS Cloud</h2>
 <h2 id="_quick_start_reference_deployment" class="discrete text-left text-center">Quick Start Reference Deployment</h2>
 <div class="imageblock text-center">
 <div class="content">
@@ -839,8 +846,8 @@ p.footer-text a{color:#d7d8d8}
 </div>
 </div>
 <div class="paragraph text-center">
-<p><strong>October 2020</strong><br>
-<em>Kirankumar Chandrashekar and Jay McConnell, Amazon Web Services</em></p>
+<p><strong>January 2021</strong><br>
+<em>Kirankumar Chandrashekar and Jay McConnell, AWS Quick Start team</em></p>
 </div>
 <div class="admonitionblock tip text-left">
 <table>
@@ -864,36 +871,21 @@ report bugs, or submit feature ideas for this Quick Start.
 <h2 id="_overview">Overview</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This Quick Start implements HTTPS endpoints and code that helps you link AWS services with webhooks. Git webhooks enable event-driven integration between Git services and external applications. This Quick Start uses this integration to receive an event when commits are pushed to a Git repository.</p>
+<p>This Quick Start deploys the HTTPS endpoint you can use to configure a webhook to link your Git and AWS services. With a webhook in place, each time a Git user pushes a commit, your repository is automatically retrieved, zipped, and uploaded to an Amazon Simple Storage Service (Amazon S3) bucket. You can then configure AWS services such as AWS CodePipeline, AWS CodeBuild, and AWS CodeDeploy to use the S3 bucket as a source.</p>
+</div>
+<div class="paragraph">
+<p>This guide describes the components that are deployed by the Quick Start, and contains links to launch the AWS CloudFormation template that automates the deployment.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_git_webhooks_on_aws">Git Webhooks on AWS</h2>
+<h2 id="_git_webhooks_on_aws">Git webhooks on AWS</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>As Figure 1 illustrates, when code is pushed to your repository, the Git service sends an HTTPS POST to the endpoints configured by the Quick Start. The POST contains JSON data about the push operation, including the repository details that the Quick Start uses to fetch the latest version of your code.</p>
+<p>After deploying the Quick Start, you use the <a href="#_configuring_git_services">endpoint information</a> it provides to configure a webhook in your Git service. A webhook sends an HTTPS POST request to the endpoint in response to a push action. The HTTPS POST request contains JavaScript Object Notation (JSON) data about the push and repository. After the request is accepted by Amazon API Gateway, it is passed to an AWS Lambda function that triggers an AWS CodeBuild project. The AWS CodeBuild project uses the information in the HTTPS POST request to retrieve the latest version of your repository.</p>
 </div>
 <div class="paragraph">
-<p><span class="image"><img src="images/image2.png" alt="image" width="647" height="266"></span></p>
-</div>
-<div class="paragraph">
-<p><strong>Figure 1: Using webhooks for code commits</strong></p>
-</div>
-<div class="paragraph">
-<p>This Quick Start implements the required code to trigger a Lambda function and an AWS CodeBuild project working together that zips up the code in your repository and places the .zip file in Amazon S3. When this function is triggered by a Git webhook, it provides a convenient way to bridge Git services with AWS services like AWS CodePipeline and AWS CodeBuild, so that builds and pipeline executions occur automatically when you commit your code to a Git repository. Linking your existing code repositories to the AWS Cloud in this way enables your code to be continuously integrated, tested, built, and deployed on the AWS Cloud with each change.</p>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-The AWS CodeBuild Project deployed by this Quick Start must be able to communicate with your Git repository. For example, you can use a SaaS-based Git service that AWS CodeBuild can reach through the internet.
-</td>
-</tr>
-</table>
+<p>For more information about the components that this Quick Start deploys, see the <a href="#_architecture">Architecture</a> section later in this guide.</p>
 </div>
 </div>
 </div>
@@ -931,46 +923,31 @@ After you deploy the Quick Start, <a href="https://docs.aws.amazon.com/awsaccoun
 <div class="paragraph">
 <p>Deploying this Quick Start builds the following environment in the AWS Cloud.</p>
 </div>
-<div id="architecture1" class="imageblock">
+<div id="architecture_diagram" class="imageblock">
 <div class="content">
-<a class="image" href="images/architecture_diagram.png"><img src="images/image3.png" alt="Architecture" width="100%" height="100%"></a>
+<a class="image" href="images/architecture_diagram.png"><img src="images/architecture_diagram.png" alt="architecture_diagram" width="100%" height="100%"></a>
 </div>
-</div>
-<div class="paragraph">
-<p><strong>Figure 2: Webhook endpoint architecture on AWS</strong></p>
+<div class="title">Figure 1. Git webhooks with AWS services Quick Start architecture</div>
 </div>
 <div class="paragraph">
-<p>The Quick Start deployment sets up a serverless AWS Cloud environment that includes the following components.</p>
+<p>As shown in <a href="#architecture_diagram">Figure 1</a>, this Quick Start sets up a serverless AWS Cloud environment that includes the following components:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>An API Gateway endpoint to accept the webhook requests from Git.</p>
+<p>Amazon API Gateway to receive Git webhook requests and forward them to AWS Lambda.</p>
 </li>
 <li>
-<p>Lambda function that processes the input git webhook payload received by the API Gateway and submits a build on AWS CodeBuild Project.</p>
+<p>An AWS Lambda function to process Git webhook requests from API Gateway and invoke an AWS CodeBuild project.</p>
 </li>
 <li>
-<p>An AWS CodeBuild project to connect to the Git service, either over SSH or through the Git service’s endpoint. This AWS CodeBuild project will zip the code and upload it to Amazon S3.</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p><strong>Important</strong> The AWS CodeBuild project that is deployed by this Quick Start must be able to communicate with your Git repository. For example, you can use a SaaS-based Git service that the AWS CodeBuild can reach through the internet.</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>An AWS KMS key to encrypt the SSH private key used to connect to the repository over SSH.</p>
+<p>An AWS CodeBuild project to connect to your Git service, then retrieve, zip, and upload the latest version of your Git repository to Amazon S3.</p>
 </li>
 <li>
-<p>Two S3 buckets: One bucket stores the zipped contents of your Git repository, and the second bucket stores the AWS KMS-encrypted SSH private keys that are generated during stack creation. Note that the first bucket has versioning enabled, and all previous versions are retained indefinitely. If you’d like to manage the retention period for old versions, follow the instructions in the <a href="http://docs.aws.amazon.com/AmazonS3/latest/user-guide/create-lifecycle.html">Amazon S3 documentation</a>.</p>
+<p>An AWS Key Management Service (AWS KMS) key to encrypt/decrypt the SSH (Secure Shell) keys used by AWS CodeBuild to connect to your Git repository using SSH. The SSH key pair is generated by a Lambda-backed AWS CloudFormation custom resource when the stack is deployed.</p>
 </li>
 <li>
-<p>Several IAM roles required for the Lambda functions and API Gateway. The inline permissions attached to these roles are scoped using the <a href="http://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege">least privilege</a> model.</p>
-</li>
-<li>
-<p>Two Lambda-backed AWS CloudFormation custom resources. One resource generates an SSH keypair, encrypts it using AWS KMS, and stores it in Amazon S3. The second resource deletes the content of the two S3 buckets on stack deletion.</p>
+<p>Two Amazon S3 buckets: one for Git repository contents, and another for encrypted SSH keys. A Lambda-backed AWS CloudFormation custom resource deletes the contents of the S3 buckets when you delete the CloudFormation stack. If you need backups, copy the S3 buckets before deleting the stack.</p>
 </li>
 </ul>
 </div>
@@ -981,7 +958,19 @@ After you deploy the Quick Start, <a href="https://docs.aws.amazon.com/awsaccoun
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-If you need backups, make sure to copy the S3 bucket contents before you delete the CloudFormation stack.
+<div class="ulist">
+<ul>
+<li>
+<p>The Quick Start deploys AWS Identity and Access Management (IAM) roles required by Lambda and API Gateway. The inline permissions attached to the roles are scoped using the <a href="http://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege">least privilege</a> model.</p>
+</li>
+<li>
+<p>The AWS CodeBuild project must be able to communicate with your Git repository. For example, you can employ a SaaS-based Git service like GitHub to which CodeBuild can connect over the internet.</p>
+</li>
+<li>
+<p>The Git repository S3 bucket this Quick Start deploys has versioning enabled, and all previous versions are retained indefinitely. To modify the retention period, see <a href="http://docs.aws.amazon.com/AmazonS3/latest/user-guide/create-lifecycle.html">How do I create a lifecycle rule for an S3 bucket?</a></p>
+</li>
+</ul>
+</div>
 </td>
 </tr>
 </table>
@@ -994,13 +983,7 @@ If you need backups, make sure to copy the S3 bucket contents before you delete 
 <div class="sect2">
 <h3 id="_specialized_knowledge">Specialized knowledge</h3>
 <div class="paragraph">
-<p>This deployment guide requires a moderate level of familiarity with
-AWS services. If you’re new to AWS, visit the
-<a href="https://aws.amazon.com/getting-started/" target="_blank" rel="noopener">Getting Started Resource Center</a>
-and the <a href="https://aws.amazon.com/training/">AWS Training and Certification
-website</a>. These sites provide materials for learning how to design,
-deploy, and operate your infrastructure and applications on the AWS
-Cloud.</p>
+<p>This deployment requires a moderate level of familiarity with AWS services. If you’re new to AWS, visit <a href="https://aws.amazon.com/getting-started/" target="_blank" rel="noopener">Getting Started with AWS</a> and <a href="https://aws.amazon.com/training/" target="_blank" rel="noopener">Training and Certification</a>. These sites provide materials for learning how to design, deploy, and operate your infrastructure and applications on the AWS Cloud.</p>
 </div>
 </div>
 <div class="sect2">
@@ -1064,12 +1047,6 @@ Cloud.</p>
 </li>
 </ol>
 </div>
-<div class="paragraph">
-<p>You can also <a href="https://fwd.aws/wr8Gg">download the template</a> to use it as a starting point for your own implementation.</p>
-</div>
-<div class="paragraph">
-<p>The stack takes approximately 15 minutes to create.</p>
-</div>
 <div class="admonitionblock note">
 <table>
 <tr>
@@ -1077,7 +1054,7 @@ Cloud.</p>
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-You are responsible for the cost of the AWS services used while running this Quick Start reference deployment. There is no additional cost for using this Quick Start. Prices are subject to change. See the pricing pages for each AWS service you will be using in this Quick Start for full details.
+You are responsible for the cost of the AWS services used while running this Quick Start reference deployment. There is no additional cost for using this Quick Start. Prices are subject to change. See the pricing pages for each AWS service you use in this Quick Start for full details.
 </td>
 </tr>
 </table>
@@ -1085,94 +1062,314 @@ You are responsible for the cost of the AWS services used while running this Qui
 <div class="olist arabic">
 <ol class="arabic" start="2">
 <li>
-<p>Check the region that’s displayed in the upper-right corner of the navigation bar, and change it if necessary. This is where the network infrastructure will be built. The template is launched in the US East (Ohio) Region by default.</p>
+<p>Check the Region that’s displayed in the upper-right corner of the navigation bar, and change it if necessary. This Region is where the Quick Start infrastructure is built. The template for this Quick Start is launched in the US East (Ohio) Region by default.</p>
 </li>
 <li>
 <p>On the <strong>Select Template</strong> page, keep the default setting for the template URL, and then choose <strong>Next</strong>.</p>
 </li>
 <li>
-<p>On the <strong>Specify Details</strong> page, change the stack name if needed. Review the parameters for the template. Provide values for the parameters that require input. For all other parameters, review the default settings and customize them as necessary. When you finish reviewing and customizing the parameters, choose <strong>Next</strong>.</p>
+<p>On the <strong>Specify Details</strong> page, change the stack name if needed. Review the parameters for the template. Provide values for the parameters that require input. For all other parameters, review the default settings and customize them as necessary. For details on each parameter, see the <a href="#_parameter_reference">Parameter reference</a> section of this guide. After reviewing and customizing the parameters, choose <strong>Next</strong>.</p>
+</li>
+</ol>
+</div>
+<div class="olist arabic">
+<ol class="arabic" start="5">
+<li>
+<p>On the <strong>Configure stack options</strong> page, you can <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-resource-tags.html" target="_blank" rel="noopener">specify tags</a> (key-value pairs) for resources in your stack and <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-add-tags.html" target="_blank" rel="noopener">set advanced options</a>. When you’re finished, choose <strong>Next</strong>.</p>
 </li>
 <li>
-<p>On the <strong>Options</strong> page, you can <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-resource-tags.html">specify tags</a> (key-value pairs) for resources in your stack and <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-add-tags.html">set advanced options</a>. When you’re done, choose <strong>Next</strong>.</p>
+<p>On the <strong>Review</strong> page, review and confirm the template settings. Under <strong>Capabilities</strong>, select the two check boxes to acknowledge that the template creates IAM resources and might require the ability to automatically expand macros.</p>
 </li>
 <li>
-<p>On the <strong>Review</strong> page, review and confirm the template settings. Under <strong>Capabilities</strong>, select the check box to acknowledge that the template will create IAM resources.</p>
+<p>Choose <strong>Create stack</strong> to deploy the stack.</p>
 </li>
 <li>
-<p>Choose <strong>Create</strong> to deploy the stack.</p>
+<p>Monitor the status of the stack. When the status is <strong>CREATE_COMPLETE</strong>, the Git webhooks deployment is ready.</p>
 </li>
 <li>
-<p>Monitor the status of the stack. When the status is <strong>CREATE_COMPLETE</strong>, the webhook resources are ready.</p>
+<p>Use the values displayed in the <strong>Outputs</strong> tab for the stack, as shown in <a href="#cfn_outputs">Figure 2</a>, to view the created resources.</p>
+</li>
+</ol>
+</div>
+<div id="cfn_outputs" class="imageblock">
+<div class="content">
+<a class="image" href="images/cfn_outputs.png"><img src="images/cfn_outputs.png" alt="cfn_outputs" width="100%" height="100%"></a>
+</div>
+<div class="title">Figure 2. Git webhooks outputs after successful deployment</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_configuring_git_services">Configuring Git services</h3>
+<div class="paragraph">
+<p>After deploying the Quick Start, set up a webhook in your Git repository.</p>
+</div>
+<div class="paragraph">
+<p>To configure a webhook, you need <strong>GitPullWebHookApi</strong> and <strong>PublicSSHKey</strong>. You can find these on the <strong>Outputs</strong> tab on the AWS CloudFormation console after deploying the Quick Start.</p>
+</div>
+<div id="outputs_tab" class="imageblock">
+<div class="content">
+<a class="image" href="images/outputs_tab.png"><img src="images/outputs_tab.png" alt="outputs_tab" width="701" height="222"></a>
+</div>
+<div class="title">Figure 3. Outputs tab on the AWS CloudFormation console</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>GitPullWebHookApi</strong> is the URL endpoint that receives the HTTP POST request from the Git service.</p>
 </li>
 <li>
-<p>The <strong>Outputs</strong> tab for the stack contain the two webhook endpoint URLs, the output bucket name, and the public SSH key, as illustrated in Figure 4.</p>
+<p><strong>PublicSSHKey</strong> is the public SSH key used to connect to your Git repository. This key can be configured as a read-only machine user or as a deployment key in your Git repository.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The instructions for setting up webhooks and deployment keys vary by Git service. For more information, see your Git service documentation.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_configuring_aws_services">Configuring AWS services</h3>
+<div class="paragraph">
+<p>After deploying the Quick Start, configure the AWS services in your workload to use the Git repository S3 bucket as a source.</p>
+</div>
+<div class="paragraph">
+<p>As shown in <a href="#outputs_tab">Figure 3</a>, the <strong>Outputs</strong> tab in the AWS CloudFormation console includes <strong>OutputBucketName</strong>. This output is an Amazon S3 key that forms the base of the path to the .zip file of your repository code. The S3 key has the following format:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>S3://output-bucket-name/git-user/git-repository/git-user_git-repository.zip</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Here, <code>git-user</code> is the owner or path prefix of the repository. In some Git services, this may be an organization name. However, some Git services do not return a Git user or organization for a repository. In these cases, you can omit the <code>git-user</code> parts of the path.</p>
+</div>
+<div class="paragraph">
+<p>The instructions vary for linking an AWS service to an Amazon S3 object. For links to AWS service documentation, see <a href="#_aws_services">AWS services</a>, later in this guide.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_adding_an_api_secret_after_deployment">Adding an API secret after deployment</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You can launch this Quick Start without an <strong>API Secret</strong> parameter. If your Git service provides an API secret when you create a webhook, you can update the stack with the API secret later.</p>
+</div>
+<div class="paragraph">
+<p>To update the stack with an API secret, do the following:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>In the <a href="https://console.aws.amazon.com/cloudformation">AWS CloudFormation console</a>, select the stack you want to update.</p>
+</li>
+<li>
+<p>In the stack details pane, choose <strong>Update</strong>.</p>
+</li>
+<li>
+<p>Choose <strong>Use current template</strong>.</p>
+</li>
+<li>
+<p>On the <strong>Specify stack details</strong> page, change the <strong>API Secret</strong> parameter setting, then choose <strong>Next</strong>.</p>
+</li>
+<li>
+<p>On the <strong>Configure stack options</strong> page, choose <strong>Next</strong>.</p>
+</li>
+<li>
+<p>Select <strong>I acknowledge that this template may create IAM resources</strong>.</p>
+</li>
+<li>
+<p>Choose <strong>Update stack</strong>. When the status is <strong>UPDATE_COMPLETE</strong>, the stack is updated with the API secret.</p>
 </li>
 </ol>
 </div>
 </div>
+</div>
+<div class="sect1">
+<h2 id="_test_the_deployment">Test the deployment</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Before putting a webhook into production, test your deployment by doing the following:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Modify a file in your repository.</p>
+</li>
+<li>
+<p>Commit and push the changes.</p>
+</li>
+<li>
+<p>Wait a few minutes, and then check the Git repository S3 bucket for a new (or updated) object with a key that matches your repository path.</p>
+</li>
+</ol>
+</div>
+<div id="S3_new_object" class="imageblock">
+<div class="content">
+<a class="image" href="images/S3_new_object.png"><img src="images/S3_new_object.png" alt="S3_new_object" width="646" height="348"></a>
+</div>
+<div class="title">Figure 4. Checking for a new or updated object in your S3 bucket after a commit</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_best_practices">Best practices</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The architecture built by this Quick Start supports AWS best practices for security.</p>
+</div>
 <div class="sect2">
-<h3 id="_configure_your_git_repository">Configure Your Git Repository</h3>
+<h3 id="_ssh_keys">SSH keys</h3>
 <div class="paragraph">
-<p>After you have successfully deployed the Quick Start, you can configure the service that will use the S3 object as a source. Figure 4 shows the <strong>Outputs</strong> tab in the AWS CloudFormation console, which displays the outputs for configuring your Git webhook.</p>
+<p>This Quick Start deploys a private SSH key pair that is encrypted with an AWS KMS key and uploaded to Amazon S3. AWS CodeBuild decrypts the private SSH key and uses it to authenticate your Git service before cloning the repository.</p>
 </div>
 <div class="paragraph">
-<p><span class="image"><img src="images/image5.png" alt="Figure 4" width="701" height="222"></span></p>
-</div>
-<div class="paragraph">
-<p><strong>Figure 3: Outputs tab after deployment</strong></p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><strong>GitPullWebHookApi</strong> is the webhook endpoint to use if you opt for the Git pull method described in the <a href="#webhook-endpoints">Webhook Endpoints</a> section of this guide.</p>
-</li>
-<li>
-<p><strong>PublicSSHKey</strong> is the public SSH key that you use to connect to your repository if you’re using the Git pull endpoint. This key can be configured as a read-only machine user or as a deployment key in your Git service.</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>The exact process to set up webhooks differs from service to service. For step-by-step instructions, consult your Git service’s documentation.</p>
+<p>We don’t recommend sharing SSH keys among multiple services, or launching another instance of this Quick Start to clone and store another repository in Amazon S3. Each repository should use unique SSH keys.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_configure_an_aws_service_to_connect_to_the_s3_object">Configure an AWS Service to Connect to the S3 Object</h3>
+<h3 id="_webhook_security">Webhook security</h3>
 <div class="paragraph">
-<p>After you have successfully deployed the Quick Start, you can configure the desired service to use the S3 object as a source. As previously illustrated in Figure 4, the <strong>Outputs</strong> tab in the AWS CloudFormation console includes the <strong>OutputBucketName</strong> output. This output is an S3 key that forms the base of the path to your code zip file. The S3 key is in this format:</p>
+<p>Git services provide different ways to authenticate an endpoint, such as webhook secrets, source-IP-address allow listing, personal access tokens, and OAuth2. We recommend that you set up at least one of these security mechanisms to protect your webhook API endpoint.</p>
 </div>
 <div class="paragraph">
-<p>S3://<em>output-bucket-name</em>/<em>git-user</em>/<em>git-repository</em>/<em>git-user_git-repository</em>.zip</p>
+<p>For more information about how this Quick Start uses endpoint security mechanisms, see the <a href="#_parameter_reference">Parameter reference</a> section of this guide. For specific guidance on how to configure security mechanisms for your Git service, refer to your Git service documentation.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_faq">FAQ</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><strong>Q.</strong> I encountered a <strong>CREATE_FAILED</strong> error when I launched the Quick Start.</p>
 </div>
 <div class="paragraph">
-<p>where:</p>
+<p><strong>A.</strong> If AWS CloudFormation fails to create the stack, we recommend that you relaunch the template with <strong>Rollback on failure</strong> set to <strong>Disabled</strong>. (This setting is under <strong>Advanced</strong> on the <strong>Options</strong> page of the AWS CloudFormation console.) With this setting, the stack’s state is retained and the instance remains running so you can troubleshoot the issue.</p>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+When you set <strong>Rollback on failure</strong> to <strong>Disabled</strong>, you continue to incur AWS charges for this stack. Ensure that you delete the stack after troubleshooting.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>For more information, see <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html" target="_blank" rel="noopener">Troubleshooting AWS CloudFormation</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_troubleshooting">Troubleshooting</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If commits to your repository do not show up in Amazon S3, do the following:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p><em>git-user</em> is the owner or path prefix of the repository. In some Git services, this may be an organization name.</p>
+<p>Check the security parameters and endpoint in your Git webhook configuration. See <a href="#_configuring_git_services">Configuring Git services</a> earlier in this guide and consult your Git service documentation for help with configuring webhooks.</p>
 </li>
 <li>
-<p>Some Git services do not return a Git user or organization for a repository. In these cases, you can omit the <em>git-user</em> parts of the path.</p>
+<p>Check the AWS Lambda logs for errors. These are stored in Amazon CloudWatch Logs. For help with accessing them, see <a href="https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html">Accessing Amazon CloudWatch logs for AWS Lambda</a>.</p>
+</li>
+<li>
+<p>Check the AWS CodeBuild project logs for errors. To access them, do the following:</p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Open the AWS CodeBuild console.</p>
+</li>
+<li>
+<p>On the <strong>Build history</strong> page, choose the <strong>Build run</strong> link for the project.</p>
+</li>
+<li>
+<p>On the <strong>Build status</strong> page, see the <strong>Build logs</strong> tab.</p>
+</li>
+</ol>
+</div>
 </li>
 </ul>
 </div>
-<div class="paragraph">
-<p>The exact process for linking an AWS service differs from service to service. For step-by-step instructions, consult the service documentation. For easy reference, here are links for the two typical services:</p>
 </div>
+</div>
+<div class="sect1">
+<h2 id="_additional_resources">Additional resources</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_aws_services">AWS services</h3>
 <div class="ulist">
 <ul>
 <li>
-<p><a href="http://docs.aws.amazon.com/codepipeline/latest/userguide/tutorials-simple-s3.html">AWS CodePipeline – Simple pipeline tutorial</a></p>
+<p><a href="https://aws.amazon.com/documentation/cloudformation/">AWS CloudFormation</a></p>
 </li>
 <li>
-<p><a href="http://docs.aws.amazon.com/codebuild/latest/userguide/getting-started.html">AWS CodeBuild – Walkthrough for creating deployable source code</a></p>
+<p><a href="https://aws.amazon.com/documentation/lambda/">AWS Lambda</a></p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://docs.aws.amazon.com/lambda/latest/dg/lambda-troubleshooting.html" target="_blank" rel="noopener">Troubleshooting issues in AWS Lambda</a></p>
 </li>
 </ul>
 </div>
-<div class="paragraph">
-<p>In the following tables, parameters are listed by category and described separately for the deployment options. When you finish reviewing and customizing the parameters, choose <strong>Next</strong>.</p>
+</li>
+<li>
+<p><a href="https://aws.amazon.com/documentation/apigateway/">Amazon API Gateway</a></p>
+</li>
+<li>
+<p><a href="https://aws.amazon.com/documentation/s3/">Amazon S3</a></p>
+</li>
+<li>
+<p><a href="https://aws.amazon.com/documentation/codepipeline/">AWS CodePipeline</a></p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="http://docs.aws.amazon.com/codepipeline/latest/userguide/tutorials-simple-s3.html">Tutorial: Create a simple pipeline (S3 bucket)</a></p>
+</li>
+</ul>
 </div>
+</li>
+<li>
+<p><a href="https://aws.amazon.com/documentation/codebuild/">AWS CodeBuild</a></p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://docs.aws.amazon.com/codebuild/latest/userguide/troubleshooting.html" target="_blank" rel="noopener">Troubleshooting AWS CodeBuild</a></p>
+</li>
+<li>
+<p><a href="http://docs.aws.amazon.com/codebuild/latest/userguide/getting-started.html">Getting started with AWS CodeBuild using the console</a></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_webhooks">Webhooks</h3>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://developer.github.com/v3/repos/hooks/">GitHub Docs: Webhooks</a></p>
+</li>
+<li>
+<p><a href="https://confluence.atlassian.com/bitbucket/manage-webhooks-735643732.html">BitBucket Support: Manage webhooks</a></p>
+</li>
+<li>
+<p><a href="https://docs.gitlab.com/ce/user/project/integrations/webhooks.html">GitLab Docs: Webhooks</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_parameter_reference">Parameter reference</h2>
+<div class="sectionbody">
 <div class="admonitionblock note">
 <table>
 <tr>
@@ -1186,11 +1383,10 @@ Region</code>, and <code>Quick Start S3 key prefix</code>. Changing these parame
 </tr>
 </table>
 </div>
-</div>
 <div class="sect2">
-<h3 id="_launch_quick_start">Launch Quick Start</h3>
+<h3 id="_parameters_for_deploying_into_your_selected_region">Parameters for deploying into your selected Region</h3>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 1. General Settings</caption>
+<caption class="title">Table 1. General settings</caption>
 <colgroup>
 <col style="width: 16%;">
 <col style="width: 11%;">
@@ -1205,21 +1401,21 @@ Region</code>, and <code>Quick Start S3 key prefix</code>. Changing these parame
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Output S3 Bucket Name
+<td class="tableblock halign-left valign-top"><p class="tableblock">Output S3 bucket name
 (<code>OutputBucketName</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Blank string</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">OPTIONAL: Bucket Name where the zip file output should be placed, if left blank a bucket name will be automatically generated.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(Optional) Name for the S3 bucket where the Git repository .zip file is stored. If left blank, the Quick Start creates one for you.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Custom Domain Name
+<td class="tableblock halign-left valign-top"><p class="tableblock">Custom domain name
 (<code>CustomDomainName</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Blank string</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Use a custom domain name for the webhook endpoint, if left blank API Gateway will create a domain name for you</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Domain name for the webhook endpoint. If left blank, API Gateway creates a domain name for you.</p></td>
 </tr>
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 2. Git Pull Settings</caption>
+<caption class="title">Table 2. Git pull settings</caption>
 <colgroup>
 <col style="width: 16%;">
 <col style="width: 11%;">
@@ -1234,27 +1430,27 @@ Region</code>, and <code>Quick Start S3 key prefix</code>. Changing these parame
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">API Secret
+<td class="tableblock halign-left valign-top"><p class="tableblock">API secret
 (<code>ApiSecret</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Blank string</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">gitpull method only. WebHook Secrets for use with GitHub Enterprise and GitLab. If a secret is matched IP range authentication is bypassed. Cannot contain: , \ "</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">API secret used to authenticate access to webhooks in GitHub Enterprise, GitLab, and other Git services. If a webhook payload header contains a matching secret, IP address authentication is bypassed. API secrets cannot contain commas (,), backward slashes (\), or quotes (").</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Allowed IPs
+<td class="tableblock halign-left valign-top"><p class="tableblock">Allowed IP addresses
 (<code>AllowedIps</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>18.205.93.0/25,18.234.32.128/25,13.52.5.0/25</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">gitpull method only. Comma seperated list of IP CIDR blocks for source IP authentication. The BitBucket Cloud IP ranges are provided as defaults.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Comma-separated list of allowed IP CIDR blocks. The default addresses listed are BitBucket Cloud IP ranges.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Exclude Git
+<td class="tableblock halign-left valign-top"><p class="tableblock">Exclude .git directory
 (<code>ExcludeGit</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>True</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Choose True to include the .git directory in the zip file or false to not include</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Choose False to omit the .git directory from the Git repository .zip file.</p></td>
 </tr>
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 3. AWS Quick Start Configuration</caption>
+<caption class="title">Table 3. AWS Quick Start configuration</caption>
 <colgroup>
 <col style="width: 16%;">
 <col style="width: 11%;">
@@ -1269,243 +1465,66 @@ Region</code>, and <code>Quick Start S3 key prefix</code>. Changing these parame
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Quick Start S3 Bucket Name
+<td class="tableblock halign-left valign-top"><p class="tableblock">Quick Start S3 bucket name
 (<code>QSS3BucketName</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>aws-quickstart</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">S3 bucket name for the Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">S3 bucket name for Quick Start assets. It can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Quick Start S3 bucket region
+<td class="tableblock halign-left valign-top"><p class="tableblock">Quick Start S3 bucket Region
 (<code>QSS3BucketRegion</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>us-east-1</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AWS Region where the Quick Start assets S3 bucket (QSS3BucketName) is hosted. Required when using your own S3 bucket.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Quick Start S3 Key Prefix
+<td class="tableblock halign-left valign-top"><p class="tableblock">Quick Start S3 key prefix
 (<code>QSS3KeyPrefix</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>quickstart-git2s3/</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Key prefix for the Quick Start assets S3 bucket. A key prefix is similar to a directory name that enables you to store similar data under the same directory in an S3 bucket. It can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slashes (/).</p></td>
 </tr>
 </tbody>
 </table>
-<div class="olist arabic">
-<ol class="arabic" start="5">
-<li>
-<p>On the <strong>Configure stack options</strong> page, you can <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-resource-tags.html" target="_blank" rel="noopener">specify tags</a> (key-value pairs) for resources in your stack and <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-add-tags.html" target="_blank" rel="noopener">set advanced options</a>. When you’re finished, choose <strong>Next</strong>.</p>
-</li>
-<li>
-<p>On the <strong>Review</strong> page, review and confirm the template settings. Under <strong>Capabilities</strong>, select the two check boxes to acknowledge that the template creates IAM resources and might require the ability to automatically expand macros.</p>
-</li>
-<li>
-<p>Choose <strong>Create stack</strong> to deploy the stack.</p>
-</li>
-<li>
-<p>Monitor the status of the stack. When the status is <strong>CREATE_COMPLETE</strong>, the Git Webhooks deployment is ready.</p>
-</li>
-<li>
-<p>Use the values displayed in the <strong>Outputs</strong> tab for the stack, as shown in <a href="#cfn_outputs">Figure 1</a>, to view the created resources.</p>
-</li>
-</ol>
-</div>
-<div id="cfn_outputs" class="imageblock">
-<div class="content">
-<a class="image" href="images/cfn_outputs.png"><img src="images/cfn_outputs.png" alt="cfn_outputs" width="648" height="439"></a>
-</div>
-<div class="title">Figure 1. Git Webhooks outputs after successful deployment</div>
-</div>
-<div class="sect3">
-<h4 id="_adding_an_api_secret_after_deployment">Adding an API Secret After Deployment</h4>
-<div class="paragraph">
-<p>In some cases, your Git service may provide security mechanisms like API secrets when you create the webhook. In these cases, you can launch the Quick Start with a blank parameter value for the <strong>API Secret</strong> parameter, and then update the stack to provide the value of the parameter. Follow these steps:</p>
-</div>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>In the <a href="https://console.aws.amazon.com/cloudformation">AWS Cloudformation console</a>, select the stack.</p>
-</li>
-</ol>
-</div>
-<div class="olist arabic">
-<ol class="arabic" start="2">
-<li>
-<p>Choose <strong>Actions</strong>, and then choose <strong>Update Stack</strong>.</p>
-</li>
-<li>
-<p>Keep the default to use the current template.</p>
-</li>
-<li>
-<p>On the <strong>Specify Details</strong> page, change the <strong>API Secret</strong> parameter setting.</p>
-</li>
-<li>
-<p>Choose <strong>Next</strong> twice.</p>
-</li>
-</ol>
-</div>
-<div class="olist arabic">
-<ol class="arabic" start="10">
-<li>
-<p>Under <strong>Capabilities</strong>, select the check box to acknowledge that the template will create IAM resources, and then choose <strong>Update</strong>.</p>
-</li>
-</ol>
-</div>
-<div class="paragraph">
-<p>When the status is <strong>UPDATE_COMPLETE</strong>, the stack has been updated with the webhook secret you specified for security.</p>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_test_the_deployment">Test the deployment</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>Before putting the webhook into production, you should test your deployment.</p>
-</div>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Modify a file in your repository.</p>
-</li>
-</ol>
-</div>
-<div class="paragraph">
-<p><span class="image"><img src="images/image6.png" alt="../Desktop/Screen_Shot_2017-07-15_at_11_35_57_AM.png" width="529" height="21"></span></p>
-</div>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Commit and push the changes.</p>
-</li>
-</ol>
-</div>
-<div class="paragraph">
-<p><span class="image"><img src="images/image7.png" alt="Figure 4" width="648" height="198"></span></p>
-</div>
-<div class="olist arabic">
-<ol class="arabic" start="2">
-<li>
-<p>Wait a few minutes and check your S3 bucket for a new (or updated) object with a key that matches your repository path.</p>
-</li>
-</ol>
-</div>
-<div class="paragraph">
-<p><span class="image"><img src="images/image8.png" alt="Figure 5" width="646" height="348"></span></p>
-</div>
-<div class="paragraph">
-<p><strong>Figure 4: Checking for S3 bucket updates after a commit</strong></p>
-</div>
-<div class="sect2">
-<h3 id="_best_practices">Best Practices</h3>
-<div class="paragraph">
-<p>The architecture built by this Quick Start supports AWS best practices for security.</p>
-</div>
-<div class="sect3">
-<h4 id="_ssh_keys">SSH Keys</h4>
-<div class="paragraph">
-<p>SSH keys are generated at stack creation, and are then encrypted using AWS KMS and the encrypted copy stored in Amazon S3. When you use the Git pull endpoint, the private key is fetched by the Lambda function, decrypted, and used to authenticate against your Git service to perform a clone of the repository. We don’t recommend (a) reusing SSH keys for multiple services, or (b) launching another instance of this Quick Start for each repository that you wish to clone to Amazon S3; this ensures that each repository uses unique keys.</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_webhook_security">Webhook Security</h4>
-<div class="paragraph">
-<p>Different Git services provide varying ways to authenticate against an endpoint. The Git pull endpoint supports webhook secrets (used by GitHub Enterprise, GitLab, and other Git repository managers) as well as source IP address whitelisting. The zip download endpoint supports personal access tokens (as used by GitHub Enterprise and GitLab) and OAuth2 (used by Bitbucket). We recommend that you set up at least one of these security mechanisms to protect your webhook API endpoint. For more information about how this Quick Start utilizes these mechanisms, see the parameters in the <a href="#deployment-steps">Deployment Steps</a> section of this guide. For product-specific guidance on how to configure these security mechanisms, refer to your Git product’s documentation.</p>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_faq">FAQ</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p><strong>Q.</strong> I encountered a <strong>CREATE_FAILED</strong> error when I launched the Quick Start.</p>
-</div>
-<div class="paragraph">
-<p><strong>A.</strong> If AWS CloudFormation fails to create the stack, we recommend that you relaunch the template with <strong>Rollback on failure</strong> set to <strong>Disabled</strong>. (This setting is under <strong>Advanced</strong> in the AWS CloudFormation console, <strong>Options</strong> page.) With this setting, the stack’s state is retained and the instance is left running, so you can troubleshoot the issue.)</p>
-</div>
-<div class="admonitionblock warning">
-<table>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 4. VPC configuration</caption>
+<colgroup>
+<col style="width: 16%;">
+<col style="width: 11%;">
+<col style="width: 73%;">
+</colgroup>
+<thead>
 <tr>
-<td class="icon">
-<i class="fa icon-warning" title="Warning"></i>
-</td>
-<td class="content">
-When you set <strong>Rollback on failure</strong> to <strong>Disabled</strong>, you continue to incur AWS charges for this stack. Please make sure to delete the stack when you finish troubleshooting.
-</td>
+<th class="tableblock halign-left valign-top">Parameter label (name)</th>
+<th class="tableblock halign-left valign-top">Default value</th>
+<th class="tableblock halign-left valign-top">Description</th>
 </tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">VPC ID
+(<code>VPCId</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Blank string</em></strong></code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ID of the VPC in which the Lambda function runs.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">VPC CIDR
+(<code>VPCCidrRange</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Blank string</em></strong></code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR range of the VPC.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Subnet IDs
+(<code>SubnetIds</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Blank string</em></strong></code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SubnetIDs in which the Lambda function runs.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Hostname override
+(<code>ScmHostnameOverride</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Blank string</em></strong></code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name to override the hostname in the header of a webhook JSON payload.</p></td>
+</tr>
+</tbody>
 </table>
-</div>
-<div class="paragraph">
-<p>For additional information, see <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html" target="_blank" rel="noopener">Troubleshooting AWS CloudFormation</a> on the AWS website.</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_troubleshooting">Troubleshooting</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>If your commits are not being pushed through to Amazon S3, check the following:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>In your Git service’s webhooks configuration, check that your configured security parameters and the endpoint are correct. Consult the Git service documentation for detailed guidance on configuration.</p>
-</li>
-<li>
-<p>Check the Lambda logs for errors. These are stored in Amazon CloudWatch Logs. To access the logs, open the endpoint’s Lambda function in the AWS console, navigate to the <strong>Monitoring</strong> tab, and then choose <strong>View logs in CloudWatch</strong>.</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>For additional information, see <a href="https://docs.aws.amazon.com/lambda/latest/dg/lambda-troubleshooting.html" target="_blank" rel="noopener">Troubleshooting issues in AWS Lambda</a> on the AWS website.</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Check the AWS CodeBuild project logs for errors. These are stored in Amazon CloudWatch Logs. To access the logs, open the endpoint’s CodeBuild Build Project in the AWS console, select a <strong>Build run</strong> and click on the hyperlink and navigate to the <strong>Build logs</strong> tab to see the build execution logs.</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>For additional information, see <a href="https://docs.aws.amazon.com/codebuild/latest/userguide/troubleshooting.html" target="_blank" rel="noopener">Troubleshooting AWS CodeBuild</a> on the AWS website.</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_additional_resources">Additional Resources</h2>
-<div class="sectionbody">
-<div class="sect2">
-<h3 id="_aws_services">AWS services</h3>
-<div class="paragraph">
-<p><strong>AWS CloudFormation</strong> <a href="https://aws.amazon.com/documentation/cloudformation/" class="bare">https://aws.amazon.com/documentation/cloudformation/</a></p>
-</div>
-<div class="paragraph">
-<p><strong>AWS Lambda</strong> <a href="https://aws.amazon.com/documentation/lambda/" class="bare">https://aws.amazon.com/documentation/lambda/</a></p>
-</div>
-<div class="paragraph">
-<p><strong>Amazon API Gateway</strong> <a href="https://aws.amazon.com/documentation/apigateway/" class="bare">https://aws.amazon.com/documentation/apigateway/</a></p>
-</div>
-<div class="paragraph">
-<p><strong>Amazon S3</strong> <a href="https://aws.amazon.com/documentation/s3/" class="bare">https://aws.amazon.com/documentation/s3/</a></p>
-</div>
-<div class="paragraph">
-<p><strong>AWS CodePipeline</strong> <a href="https://aws.amazon.com/documentation/codepipeline/" class="bare">https://aws.amazon.com/documentation/codepipeline/</a></p>
-</div>
-<div class="paragraph">
-<p><strong>AWS CodeBuild</strong> <a href="https://aws.amazon.com/documentation/codebuild/" class="bare">https://aws.amazon.com/documentation/codebuild/</a></p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_webhooks">Webhooks</h3>
-<div class="paragraph">
-<p><strong>GitHub Developer Repository Webhooks API</strong> <a href="https://developer.github.com/v3/repos/hooks/" class="bare">https://developer.github.com/v3/repos/hooks/</a></p>
-</div>
-<div class="paragraph">
-<p><strong>Atlassian Bitbucket Webhooks documentation</strong> <a href="https://confluence.atlassian.com/bitbucket/manage-webhooks-735643732.html" class="bare">https://confluence.atlassian.com/bitbucket/manage-webhooks-735643732.html</a></p>
-</div>
-<div class="paragraph">
-<p><strong>GitLab Webhooks documentation</strong> <a href="https://docs.gitlab.com/ce/user/project/integrations/webhooks.html" class="bare">https://docs.gitlab.com/ce/user/project/integrations/webhooks.html</a></p>
-</div>
 </div>
 </div>
 </div>
@@ -1550,7 +1569,7 @@ and to share your customizations with others.</p>
 </div>
 <p class="footer-text">
 <!-- We can use document attributes: -->
-<!-- Generated with Asciidoctor v2.0.10. -->
+<!-- Generated with Asciidoctor v2.0.12. -->
 <a href="https://aws.amazon.com/privacy/">Privacy</a> | <a href="https://aws.amazon.com/terms/">Site terms</a> | &copy; 2020, Amazon Web Services, Inc. or its affiliates. All rights reserved.
 </p>
 </body>
