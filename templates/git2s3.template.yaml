@@ -625,6 +625,7 @@ Resources:
           - SecurityGroupIds:
               - !Ref 'GitPullSecurityGroup'
             Subnets: !Ref 'SubnetIds'
+            VpcId: !Ref 'VPCId'
           - !Ref 'AWS::NoValue'
         Artifacts:
           Type: NO_ARTIFACTS
