@@ -610,6 +610,13 @@ Resources:
                   - logs:PutLogEvents
                 Resource:
                   - arn:aws:logs:*:*:*
+               - Effect: Allow
+                Action:
+                  - ec2:CreateNetworkInterface
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:DeleteNetworkInterface
+                Resource:
+                  - arn:aws:ec2:*:*:*                 
               - Effect: Allow
                 Action:
                   - codebuild:StartBuild
