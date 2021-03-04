@@ -1,0 +1,33 @@
+
+.General settings
+[width="100%",cols="16%,11%,73%",options="header",]
+|===
+|Parameter label (name) |Default value|Description|Output S3 bucket name
+(`OutputBucketName`)|`**__Blank string__**`|(Optional) Name for the S3 bucket where the Git repository .zip file is stored. If left blank, the Quick Start creates one for you.|Custom domain name
+(`CustomDomainName`)|`**__Blank string__**`|Domain name for the webhook endpoint. If left blank, API Gateway creates a domain name for you.
+|===
+.Git pull settings
+[width="100%",cols="16%,11%,73%",options="header",]
+|===
+|Parameter label (name) |Default value|Description|API secret
+(`ApiSecret`)|`**__Blank string__**`|API secret used to authenticate access to webhooks in GitHub Enterprise, GitLab, and other Git services. If a webhook payload header contains a matching secret, IP address authentication is bypassed. API secrets cannot contain commas (,), backward slashes (\), or quotes (").|Allowed IP addresses
+(`AllowedIps`)|`18.205.93.0/25,18.234.32.128/25,13.52.5.0/25`|Comma-separated list of allowed IP CIDR blocks. The default addresses listed are BitBucket Cloud IP ranges.|Exclude .git directory
+(`ExcludeGit`)|`True`|Choose False to omit the .git directory from the Git repository .zip file.
+|===
+.AWS Quick Start configuration
+[width="100%",cols="16%,11%,73%",options="header",]
+|===
+|Parameter label (name) |Default value|Description|Quick Start S3 bucket name
+(`QSS3BucketName`)|`aws-quickstart`|S3 bucket name for Quick Start assets. It can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).|Quick Start S3 bucket Region
+(`QSS3BucketRegion`)|`us-east-1`|AWS Region where the Quick Start assets S3 bucket (QSS3BucketName) is hosted. Required when using your own S3 bucket.|Quick Start S3 key prefix
+(`QSS3KeyPrefix`)|`quickstart-git2s3/`|Key prefix for the Quick Start assets S3 bucket. A key prefix is similar to a directory name that enables you to store similar data under the same directory in an S3 bucket. It can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slashes (/).
+|===
+.VPC configuration
+[width="100%",cols="16%,11%,73%",options="header",]
+|===
+|Parameter label (name) |Default value|Description|VPC ID
+(`VPCId`)|`**__Blank string__**`|ID of the VPC in which the Lambda function runs.|VPC CIDR
+(`VPCCidrRange`)|`**__Blank string__**`|CIDR range of the VPC.|Subnet IDs
+(`SubnetIds`)|`**__Blank string__**`|SubnetIDs in which the Lambda function runs.|Hostname override
+(`ScmHostnameOverride`)|`**__Blank string__**`|Name to override the hostname in the header of a webhook JSON payload.
+|===
