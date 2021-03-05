@@ -6,7 +6,7 @@
 
 === Launch the Quick Start
 
-. https://fwd.aws/mDMrd[Launch the AWS CloudFormation template] into your AWS account.
+. https://fwd.aws/8kp57[Launch the AWS CloudFormation template] into your AWS account.
 
 NOTE: You are responsible for the cost of the AWS services used while running this Quick Start reference deployment. There is no additional cost for using this Quick Start. Prices are subject to change. See the pricing pages for each AWS service you use in this Quick Start for full details.
 
