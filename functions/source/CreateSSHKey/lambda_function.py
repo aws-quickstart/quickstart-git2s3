@@ -47,7 +47,7 @@ def lambda_handler(event,context):
             f = open('/tmp/enc_key', 'wb')
             f.write(enc_key)
             f.close()
-            # Upload priivate key to S3
+            # Upload private key to S3
             s3 = boto3.client('s3')
             s3.upload_file('/tmp/enc_key',
                            event["ResourceProperties"]["KeyBucket"], 'enc_key')
