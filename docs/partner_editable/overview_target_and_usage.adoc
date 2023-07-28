@@ -1,4 +1,0 @@
-This Quick Start deploys the HTTPS endpoint you can use to configure a webhook to link your Git and AWS services. With a webhook in place, each time a Git user pushes a commit, your repository is automatically retrieved, zipped, and uploaded to an Amazon Simple Storage Service (Amazon S3) bucket. You can then configure AWS services such as AWS CodePipeline, AWS CodeBuild, and AWS CodeDeploy to use the S3 bucket as a source.
-
-This guide describes the components that are deployed by the Quick Start, and contains links to launch the AWS CloudFormation template that automates the deployment.
-
