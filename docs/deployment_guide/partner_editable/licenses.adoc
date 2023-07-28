@@ -1,3 +1,9 @@
 // Include details about any licenses and how to sign up. Provide links as appropriate.
 
-There is no cost to use this Partner Solution, but you will be billed for any AWS services or resources that this Partner Solution deploys. For more information, refer to the https://fwd.aws/rA69w?[AWS Partner Solution General Information Guide^].
+There is no cost to use this AWS Solution, but you will be billed for any AWS services or resources that this AWS Solution deploys. For more information, refer to the https://fwd.aws/rA69w?[AWS Partner Solution General Information Guide^].
+
+The solution provides an Amazon API Gateway endpoint, Lambda functions, and an AWS CodeBuild project to access, compress, and upload code to Amazon S3. AWS CodePipeline carries a cost for each active pipeline. For more information, refer to https://aws.amazon.com/codepipeline/pricing/[AWS CodePipeline pricing^].
+
+Depending on your configuration, the solution may deploy an AWS Key Management Service (AWS KMS) key which incurs a monthly cost for key storage and usage. For more information, refer to https://aws.amazon.com/kms/pricing/[AWS Key Management Service pricing^].
+
+API Gateway, Amazon S3, Lambda, and AWS CodeBuild costs vary depending on how often you commit code to the connected Git repository. For more information, refer to https://aws.amazon.com/api-gateway/pricing/[Amazon API Gateway pricing^], https://aws.amazon.com/s3/pricing/[Amazon S3 pricing^], https://aws.amazon.com/lambda/pricing/[AWS Lambda pricing^] and https://aws.amazon.com/codebuild/pricing/[AWS CodeBuild pricing^].
