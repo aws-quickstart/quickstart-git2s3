@@ -1,0 +1,5 @@
+// Edit this placeholder text as necessary to describe the deployment options.
+
+This solution provides a single deployment option:
+
+* https://fwd.aws/mDMrd[Launch the AWS CloudFormation template^] into your AWS account.

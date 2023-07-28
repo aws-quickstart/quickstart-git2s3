@@ -1,0 +1,17 @@
+:partner-solution-project-name: partner-solution-repo-name
+:partner-solution-github-org: aws-quickstart
+:partner-product-name: Git webhooks
+:partner-product-short-name: Git webhooks
+//:partner-company-name: Example Company Name, Ltd.
+:doc-month: January
+:doc-year: 2021
+:partner-contributors: John Smith, {partner-company-name}
+// :other-contributors: Akua Mansa, Trek10
+//:aws-contributors: Janine Singh, AWS IoT Partner team
+:aws-ia-contributors: Kirankumar Chandrashekar and Jay McConnell, AWS Integration & Automation team
+:deployment_time: 15 minutes
+:default_deployment_region: us-east-2
+// :private_repo:
+
+
+// For instructions on creating this deployment guide, refer to "Build your AWS Partner Solution documentation" (https://aws-ia-us-west-2.s3.us-west-2.amazonaws.com/docs/content/index.html#/).
