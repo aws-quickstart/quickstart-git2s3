@@ -140,6 +140,8 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       Tags: []
+      VersioningConfiguration:
+        Status: Enabled
 
   CopyZips:
     Type: AWS::CloudFormation::CustomResource
@@ -164,7 +166,7 @@ Resources:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Path: /
       Policies:
         - PolicyName: lambda-copier
@@ -182,7 +184,7 @@ Resources:
                   - s3:PutObject
                   - s3:DeleteObject
                 Resource:
-                  - !Sub 'arn:aws:s3:::${LambdaZipsBucket}/${QSS3KeyPrefix}*'
+                  - !Sub 'arn:${AWS::Partition}:s3:::${LambdaZipsBucket}/${QSS3KeyPrefix}*'
               - Effect: Allow
                 Action:
                   - s3:*
@@ -261,6 +263,8 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       Tags: []
+      VersioningConfiguration:
+        Status: Enabled
 
   OutputBucket:
     Type: AWS::S3::Bucket
@@ -276,7 +280,8 @@ Resources:
   KMSKey:
     Type: AWS::KMS::Key
     Properties:
-      Description: AWS KWS key to encrypt and decrypt SSH keys stored in S3. 
+      Description: AWS KWS key to encrypt and decrypt SSH keys stored in S3.
+      EnableKeyRotation: true
       KeyPolicy:
         Version: '2012-10-17'
         Statement:
@@ -336,7 +341,7 @@ Resources:
             Condition:
               Bool:
                 kms:GrantIsForAWSResource: true
-  
+
   CreateSSHKeyRole:
     Type: AWS::IAM::Role
     Properties:
@@ -382,8 +387,8 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource:
-                  - arn:aws:logs:*:*:*
-  
+                  - !Sub arn:${AWS::Partition}:logs:*:*:*
+
   CreateSSHKeyLambda:
     DependsOn: CopyZips
     Type: AWS::Lambda::Function
@@ -396,7 +401,7 @@ Resources:
       Code:
         S3Bucket: !Ref 'LambdaZipsBucket'
         S3Key: !Sub '${QSS3KeyPrefix}functions/packages/CreateSSHKey/lambda.zip'
-  
+
   CreateSSHKey:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
@@ -405,7 +410,7 @@ Resources:
       KeyBucket: !Ref 'KeyBucket'
       Region: !Ref 'AWS::Region'
       KMSKey: !Ref 'KMSKey'
-  
+
   DeleteBucketContentsRole:
     Type: AWS::IAM::Role
     Properties:
@@ -451,7 +456,7 @@ Resources:
                   - logs:PutLogEvents
                 Resource:
                   - arn:aws:logs:*:*:*
-  
+
   DeleteBucketContentsLambda:
     DependsOn: CopyZips
     Type: AWS::Lambda::Function
@@ -464,7 +469,7 @@ Resources:
       Code:
         S3Bucket: !Ref 'LambdaZipsBucket'
         S3Key: !Sub '${QSS3KeyPrefix}functions/packages/DeleteBucketContents/lambda.zip'
-  
+
   DeleteBucketContents:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
@@ -484,13 +489,13 @@ Resources:
           Statement:
           - Effect: "Allow"
             Principal:
-                Service: "codebuild.amazonaws.com" 
-            Action: 
+                Service: "codebuild.amazonaws.com"
+            Action:
                 - "sts:AssumeRole"
         Path: "/"
         ManagedPolicyArns:
           - !Ref CodeBuildEndpointPolicy
-        Tags: 
+        Tags:
           -
               Key: 'tagging-policy'
               Value: !Join ['-', ["test", "ok"]]
@@ -500,13 +505,13 @@ Resources:
     Properties:
         Description: Policy with base permissions for CodeBuild.
         Path: /
-        Roles: 
+        Roles:
           - !Ref CodeBuildServiceRole
         PolicyDocument:
           Version: 2012-10-17
           Statement:
           - Effect: "Allow"
-            Action: 
+            Action:
                 - "logs:CreateLogGroup"
                 - "logs:PutLogEvents"
                 - "logs:CreateLogStream"
@@ -680,7 +685,7 @@ Resources:
                     - mv ./enc_key.pem ~/.ssh/id_rsa
                     - ls ~/.ssh/
                     - echo "Setting SSH config profile"
-                    - | 
+                    - |
                       cat > ~/.ssh/config <<EOF
                       Host *
                         AddKeysToAgent yes
@@ -695,7 +700,7 @@ Resources:
                     - |
                       if [ "$exclude_git" = "True" ]; then
                         zip -r $outputbucketkey ./ -x '*.git*'
-                      else 
+                      else
                         zip -r $outputbucketkey ./
                       fi
                     - ls -alh
