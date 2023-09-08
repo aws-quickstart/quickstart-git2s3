@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: '2010-09-09'F
 Description: Git webhooks to clone and store a Git repository in S3. Used to integrate Git services
   with AWS services like AWS CodePipeline, AWS CodeBuild, and AWS CodeDeploy. (qs-1nfhrd9bh)
 Metadata:
@@ -166,7 +166,7 @@ Resources:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Path: /
       Policies:
         - PolicyName: lambda-copier
@@ -184,7 +184,7 @@ Resources:
                   - s3:PutObject
                   - s3:DeleteObject
                 Resource:
-                  - !Sub 'arn:aws:s3:::${LambdaZipsBucket}/${QSS3KeyPrefix}*'
+                  - !Sub 'arn:${AWS::Partition}:s3:::${LambdaZipsBucket}/${QSS3KeyPrefix}*'
               - Effect: Allow
                 Action:
                   - s3:*
@@ -281,6 +281,7 @@ Resources:
     Type: AWS::KMS::Key
     Properties:
       Description: AWS KWS key to encrypt and decrypt SSH keys stored in S3.
+      EnableKeyRotation: true
       KeyPolicy:
         Version: '2012-10-17'
         Statement:
@@ -386,7 +387,7 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource:
-                  - arn:aws:logs:*:*:*
+                  - !Sub arn:${AWS::Partition}:logs:*:*:*
 
   CreateSSHKeyLambda:
     DependsOn: CopyZips
