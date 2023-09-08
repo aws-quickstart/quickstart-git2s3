@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'F
+AWSTemplateFormatVersion: '2010-09-09'
 Description: Git webhooks to clone and store a Git repository in S3. Used to integrate Git services
   with AWS services like AWS CodePipeline, AWS CodeBuild, and AWS CodeDeploy. (qs-1nfhrd9bh)
 Metadata:
